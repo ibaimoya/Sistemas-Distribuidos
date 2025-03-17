@@ -1,11 +1,14 @@
 # Sistemas-Distribuidos
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+****
 
 Repositorio en el que se encuentran las prácticas de **Sistemas Distribuidos** del curso **2024 - 2025**.
 
 ### Autor: 
 - [Ibai Moya Aroz](mailto:ima1013@alu.ubu.es)
+
+****
 
 ### Requisitos:
 | **Producto** | **Versión** | **Descarga** |
