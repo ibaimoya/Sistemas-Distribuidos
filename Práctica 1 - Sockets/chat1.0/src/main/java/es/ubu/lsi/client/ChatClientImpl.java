@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Scanner;
 
 import es.ubu.lsi.common.ChatMessage;
+import es.ubu.lsi.common.ChatMessage.MessageType;
 
 /**
  * Implementación de la interfaz ChatClient.
@@ -20,7 +22,7 @@ import es.ubu.lsi.common.ChatMessage;
 public class ChatClientImpl implements ChatClient {
 
     /** Puerto por defecto. */
-    private final int DEFAULT_PORT = 1500;
+    private static final int DEFAULT_PORT = 1500;
 
     /** Servidor al que se conectará el cliente. */
     private String server;
@@ -29,7 +31,7 @@ public class ChatClientImpl implements ChatClient {
     private String username;
 
     /** Nombre de usuario del cliente. */
-    private int port = DEFAULT_PORT;
+    private static int port = ChatClientImpl.DEFAULT_PORT;
 
     /** Flag para mantener la conexión. */
     private boolean carryOn = true;
@@ -43,14 +45,17 @@ public class ChatClientImpl implements ChatClient {
 	private ObjectOutputStream output;
 	
 
+    /** Color rojo. */
+    private static final String RED = "\u001B[31m";
+
     /** Color amarillo. */
-    String yellow = "\u001B[33m";
+    private static final String YELLOW = "\u001B[33m";
 
     /** Color cian. */
-    String cyan = "\u001B[36m";
+    private static final String CYAN = "\u001B[36m";
 
     /** Reset de color. */
-    String reset = "\u001B[0m";
+    private static final String RESET = "\u001B[0m";
 
     /**
      * Constructor de ChatClientImpl.
@@ -95,31 +100,122 @@ public class ChatClientImpl implements ChatClient {
                         System.out.println(receivedMsg.getId() + ": " + receivedMsg.getMessage());
                     }
                 }
-            } catch (IOException | ClassNotFoundException exception) {
-                // En caso de error (por ejemplo, problemas al leer el objeto), se muestra el mensaje de error.
-                System.err.printf("Error in listener thread: %s%n", exception.getMessage());
+            } catch (ClassNotFoundException CNFException) {
+
+                System.err.printf(ChatClientImpl.RED + "[!] Error de clase no encontrada: "  + ChatClientImpl.RESET + "%s\n", CNFException.getMessage());
+            } catch (IOException ioException) {
+
+                System.err.printf(ChatClientImpl.RED + "[!] Error de entrada / salida: " + ChatClientImpl.RESET + "%s\n", ioException.getMessage());
             }
-    }
+        }
     }
 
     @Override
     public boolean start() {
-       // ChatClientListener listener = new ChatClientListener(this);
-       // new Thread(listener).start();
-        return true;
+        boolean success;
+
+        try {
+            /* Se inicializan los elementos necesarios para la conexión. */
+            this.socket = new Socket(this.server, this.port);
+            this.output = new ObjectOutputStream(this.socket.getOutputStream());
+            this.input = new ObjectInputStream(this.socket.getInputStream());
+
+            /* Se inicializa el hilo que escucha los mensajes del servidor. */
+            ChatClientListener clientListener = new ChatClientListener();
+            new Thread(clientListener).start();
+
+            success = true;
+            
+        } catch (IOException ioException) {
+            success = false;
+
+            System.err.printf(ChatClientImpl.RED + "[!] Error al tratar de inicializar el cliente: " + ChatClientImpl.RESET + "%s\n", ioException.getMessage());
+        } 
+
+        return success;
     }
 
     @Override
-    public void sendMessage(String message) {
+    public void sendMessage(ChatMessage message) {
+        try {
+
+            /* Se escribe el mensaje en el flujo de salida. */
+            output.writeObject(message);
+        } catch (IOException ioException) {
+            System.err.printf(ChatClientImpl.RED + "[!] Error de entrada / salida: " + ChatClientImpl.RESET + "%s\n", ioException.getMessage());
+        }
     }
 
     @Override
     public void disconnect() {
-        System.out.println(this.yellow + "[*]" + this.cyan + " Desconectando del sistema..." + this.reset + "\n");
-        carryOn = false;
+        try {
+            System.out.println(ChatClientImpl.YELLOW + "[*]" + ChatClientImpl.CYAN + " Desconectando del sistema..." + ChatClientImpl.RESET + "\n");
+            carryOn = false;
+
+            /* Se cierran los elementos de la conexión. */
+            if (socket != null){
+                socket.close();
+            }
+
+            if (input != null){
+                input.close();
+            }
+
+            if (output != null){
+                output.close();
+            }
+
+        } catch (IOException ioException) {
+            System.err.printf(ChatClientImpl.RED + "[!] Error al cerrar los elementos: " + ChatClientImpl.RESET + "%s\n", ioException.getMessage());
+        }
     }
 
     public static void main(String[] args) {
-        
-    }
+        if (args.length < 3) {
+            System.err.printf(ChatClientImpl.RED + "[!] Error en el formato de entrada." + ChatClientImpl.RESET);
+            System.exit(1);
+        }
+		
+		String server = args[0];
+	    port = Integer.parseInt(args[1]);
+	    String username = args[2];
+	    
+	    ChatClientImpl cliente = new ChatClientImpl(server, port, username);
+	    
+	    if (!cliente.start()) {
+	    	System.err.println("No se pudo iniciar el cliente.");
+            return;
+	    } else {
+	    	Scanner scanner = new Scanner(System.in);
+	    	
+	    	while (cliente.carryOn) {
+	    		String input = scanner.nextLine();
+	    		
+	    		if ("logout".equalsIgnoreCase(input)) {
+	    			String msgText = cliente.username + " patrocina el mensaje: logout";
+	    			ChatMessage logoutMsg = new ChatMessage(cliente.id, MessageType.LOGOUT, msgText);
+	    			cliente.sendMessage(logoutMsg);
+	    			
+	    			cliente.carryOn=false;
+	    			
+	    		}else if("shutdown".equalsIgnoreCase(input)){
+	    			String msgText = cliente.username + " patrocina el mensaje: shutdown";
+	    			ChatMessage shutdownMsg = new ChatMessage(cliente.id, MessageType.SHUTDOWN, msgText);
+	    			cliente.sendMessage(shutdownMsg);
+	    			
+	    			cliente.carryOn=false;
+	    			
+	    		}else {
+	    			String msgText = cliente.username + " patrocina el mensaje: "+ input;
+	    			ChatMessage message = new ChatMessage(cliente.id, MessageType.MESSAGE, msgText);
+	    			cliente.sendMessage(message);
+	    		}
+	    	}
+	    	scanner.close();
+
+	        // Finalmente, desconectamos
+	        cliente.disconnect();
+	    }
+	}
+
 }

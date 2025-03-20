@@ -1,5 +1,7 @@
 package es.ubu.lsi.client;
 
+import es.ubu.lsi.common.ChatMessage;
+
 /**
  * Define la signatura de los métodos de envío de mensaje, desconexión y arranque.
  * 
@@ -21,7 +23,7 @@ public interface ChatClient {
      * Envía un mensaje al servidor.
      * @param message El mensaje a enviar
      */
-    public void sendMessage(String message);
+    public void sendMessage(ChatMessage message);
 
     /**
      * Desconecta el cliente del servidor.
