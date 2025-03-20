@@ -23,20 +23,13 @@
     </properties>
 
     <dependencies>
-        <!-- Usa JUnit 5 para pruebas. -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>${junit-jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>${junit-jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+ 
+         <dependency>
+           <groupId>junit</groupId>
+           <artifactId>junit</artifactId>
+           <version>4.13.2</version>
+           <scope>test</scope>
+         </dependency>
 
     <build>
         <!-- Gestión de plugins para Jacoco y Surefire. -->
