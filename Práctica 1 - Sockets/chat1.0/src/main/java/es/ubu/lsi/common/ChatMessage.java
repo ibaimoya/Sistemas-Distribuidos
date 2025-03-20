@@ -1,7 +1,7 @@
 package es.ubu.lsi.common;
 
 
-import java.io.*;
+import java.io.Serializable;
 
 /**
  * Message in chat system.
