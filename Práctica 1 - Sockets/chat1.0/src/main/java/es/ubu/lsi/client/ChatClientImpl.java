@@ -24,6 +24,15 @@ public class ChatClientImpl implements ChatClient {
     /** Puerto por defecto. */
     private static final int DEFAULT_PORT = 1500;
 
+    /** Mensaje de logout. */
+    private static final String LOGOUT = "logout";
+    
+    /** Mensaje de shudown. */
+    private static final String SHUTDOWN = "shutdown";
+
+    /** Mensaje de mensaje. */
+    private static final String MESSAGE = "message";
+
     /** Servidor al que se conectará el cliente. */
     private String server;
 
@@ -50,6 +59,9 @@ public class ChatClientImpl implements ChatClient {
 
     /** Color amarillo. */
     private static final String YELLOW = "\u001B[33m";
+
+    /** Color magenta. */
+    private static final String MAGENTA = "\u001B[35m";
 
     /** Color cian. */
     private static final String CYAN = "\u001B[36m";
@@ -172,7 +184,7 @@ public class ChatClientImpl implements ChatClient {
 
     public static void main(String[] args) {
         if (args.length < 3) {
-            System.err.printf(ChatClientImpl.RED + "[!] Error en el formato de entrada." + ChatClientImpl.RESET);
+            System.err.printf(ChatClientImpl.RED + "[!] Error en el formato de entrada.\n" + ChatClientImpl.RESET);
             System.exit(1);
         }
 		
@@ -183,39 +195,41 @@ public class ChatClientImpl implements ChatClient {
 	    ChatClientImpl cliente = new ChatClientImpl(server, port, username);
 	    
 	    if (!cliente.start()) {
-	    	System.err.println("No se pudo iniciar el cliente.");
-            return;
+            System.err.printf(ChatClientImpl.RED + "[!] ERROR: El cliente no se ha inicializado correctamente.\n" + ChatClientImpl.RESET);
+            System.exit(1);
+
+
 	    } else {
 	    	Scanner scanner = new Scanner(System.in);
 	    	
 	    	while (cliente.carryOn) {
 	    		String input = scanner.nextLine();
 	    		
-	    		if ("logout".equalsIgnoreCase(input)) {
-	    			String msgText = cliente.username + " patrocina el mensaje: logout";
-	    			ChatMessage logoutMsg = new ChatMessage(cliente.id, MessageType.LOGOUT, msgText);
-	    			cliente.sendMessage(logoutMsg);
-	    			
-	    			cliente.carryOn=false;
-	    			
-	    		}else if("shutdown".equalsIgnoreCase(input)){
-	    			String msgText = cliente.username + " patrocina el mensaje: shutdown";
-	    			ChatMessage shutdownMsg = new ChatMessage(cliente.id, MessageType.SHUTDOWN, msgText);
-	    			cliente.sendMessage(shutdownMsg);
-	    			
-	    			cliente.carryOn=false;
-	    			
-	    		}else {
-	    			String msgText = cliente.username + " patrocina el mensaje: "+ input;
-	    			ChatMessage message = new ChatMessage(cliente.id, MessageType.MESSAGE, msgText);
-	    			cliente.sendMessage(message);
-	    		}
-	    	}
-	    	scanner.close();
-
-	        // Finalmente, desconectamos
-	        cliente.disconnect();
-	    }
+                switch (input.toUpperCase()) {
+                    case "LOGOUT":
+                        String logoutText = cliente.username + " patrocina el mensaje: logout";
+                        ChatMessage logoutMsg = new ChatMessage(cliente.id, MessageType.LOGOUT, logoutText);
+                        cliente.sendMessage(logoutMsg);
+                        cliente.carryOn = false;
+                        break;
+                    case "SHUTDOWN":
+                        String shutdownText = cliente.username + " patrocina el mensaje: shutdown";
+                        ChatMessage shutdownMsg = new ChatMessage(cliente.id, MessageType.SHUTDOWN, shutdownText);
+                        cliente.sendMessage(shutdownMsg);
+                        cliente.carryOn = false;
+                        break;
+                    case "MESSAGE":
+                        String messageText = cliente.username + " patrocina el mensaje: " + input;
+                        ChatMessage message = new ChatMessage(cliente.id, MessageType.MESSAGE, messageText);
+                        cliente.sendMessage(message);
+                        break;
+                    default:
+                        System.err.printf(ChatClientImpl.RED + "[!] ERROR: No se reconoce el tipo de mensaje.\n" + ChatClientImpl.RESET);
+                        break;
+                }
+            }
+            scanner.close();
+            cliente.disconnect();
+        }
 	}
-
 }
