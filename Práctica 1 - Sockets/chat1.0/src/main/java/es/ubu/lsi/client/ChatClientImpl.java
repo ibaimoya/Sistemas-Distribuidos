@@ -3,12 +3,11 @@ package es.ubu.lsi.client;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.Scanner;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import es.ubu.lsi.common.ChatMessage;
 import es.ubu.lsi.common.ChatMessage.MessageType;
@@ -25,8 +24,15 @@ import es.ubu.lsi.common.ChatMessage.MessageType;
  */
 public class ChatClientImpl implements ChatClient {
 
+    
+    /** Servidor por defecto. */
+    private static final String DEFAULT_SERVER = "localhost";
+
     /** Puerto por defecto. */
     private static final int DEFAULT_PORT = 1500;
+
+    /** Usuario por defecto. */
+    private static final String DEFAULT_USER = "Usuario";
 
     /** Mensaje de logout. */
     private static final String LOGOUT = "logout";
@@ -34,14 +40,11 @@ public class ChatClientImpl implements ChatClient {
     /** Mensaje de shudown. */
     private static final String SHUTDOWN = "shutdown";
 
-    /** Mensaje de mensaje. */
-    private static final String MESSAGE = "message";
-
     /** Servidor al que se conectará el cliente. */
-    private String server;
+    private String server = ChatClientImpl.DEFAULT_SERVER;
 
     /** Puerto de conexión con el servidor. */
-    private String username;
+    private String username = ChatClientImpl.DEFAULT_USER;
 
     /** Nombre de usuario del cliente. */
     private int port = ChatClientImpl.DEFAULT_PORT;
@@ -66,9 +69,6 @@ public class ChatClientImpl implements ChatClient {
 
     /** Color amarillo. */
     private static final String YELLOW = "\u001B[33m";
-
-    /** Color magenta. */
-    private static final String MAGENTA = "\u001B[35m";
 
     /** Color cian. */
     private static final String CYAN = "\u001B[36m";
@@ -108,7 +108,7 @@ public class ChatClientImpl implements ChatClient {
                 while (carryOn) {
                     
                     /* Lee un objeto del flujo de entrada. */
-                    Object receivedObject  = input.readObject();
+                    Object receivedObject  = buffer.read();
                     
                     /* Verifica si el objeto recibido es de tipo ChatMessage 
                     *  para transformarlo si es necesario. */
@@ -118,13 +118,27 @@ public class ChatClientImpl implements ChatClient {
 
                         System.out.println(receivedMsg.getId() + ": " + receivedMsg.getMessage());
                     }
-                }
-            } catch (ClassNotFoundException CNFException) {
 
-                System.err.printf(ChatClientImpl.RED + "[!] Error de clase no encontrada: "  + ChatClientImpl.RESET + "%s\n", CNFException.getMessage());
+
+                }
+                String line;
+                String time;
+                String timestamp;
+
+                line = buffer.readLine();
+
+                while (line != null) {
+                    time = new SimpleDateFormat("HH:mm:ss").format(new Date());
+                    timestamp = "[" + time + "]";
+
+                    System.out.println(ChatClientImpl.YELLOW + "[*] " + ChatClientImpl.CYAN + timestamp + " " + 
+                                            username + ": " +ChatClientImpl.RESET + line);
+                    line = buffer.readLine();
+                }
+            
             } catch (IOException ioException) {
 
-                System.err.printf(ChatClientImpl.RED + "[!] Error de entrada / salida: " + ChatClientImpl.RESET + "%s\n", ioException.getMessage());
+                System.err.printf(ChatClientImpl.RED + "[!] Error de conexsión con el servidor: " + ChatClientImpl.RESET + "%s\n", ioException.getMessage());
             }
         }
     }
@@ -134,9 +148,6 @@ public class ChatClientImpl implements ChatClient {
 
         /* Flujo de entrada. */
         BufferedReader input;
-
-        /* Flujo de salida. */
-        PrintWriter output;
         
         /* True = tarea exitosa, False en caso contrario. */
         boolean success;
@@ -144,7 +155,6 @@ public class ChatClientImpl implements ChatClient {
         try {
             /* Se inicializan los elementos necesarios para la conexión. */
             this.socket = new Socket(this.server, this.port);
-            output = new PrintWriter(this.socket.getOutputStream(), true);
             input = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), StandardCharsets.UTF_8));
 
             /* Se inicializa el hilo que escucha los mensajes del servidor. */
@@ -174,7 +184,7 @@ public class ChatClientImpl implements ChatClient {
         try {
             String message;
 
-            while (carryOn) {
+            while (this.carryOn) {
 
                 message = bufferedInput.readLine();
  
@@ -224,21 +234,30 @@ public class ChatClientImpl implements ChatClient {
             if (socket != null){
                 socket.close();
             }
-            
+
         } catch (IOException ioException) {
             System.err.printf(ChatClientImpl.RED + "[!] Error al cerrar los elementos: " + ChatClientImpl.RESET + "%s\n", ioException.getMessage());
         }
     }
 
+    /**
+     * Método principal de la clase ChatClientImpl.
+     * 
+     * @param args Argumentos de la línea de comandos.
+     */
     public static void main(String[] args) {
-        if (args.length < 3) {
-            System.err.printf(ChatClientImpl.RED + "[!] Error en el formato de entrada.\n" + ChatClientImpl.RESET);
+        if ((args.length < 3 || args.length > 3) && args.length != 0) {
+            System.err.printf(ChatClientImpl.RED + "[!] Error en el formato de entrada ().\n" + ChatClientImpl.RESET);
+            System.out.println(ChatClientImpl.YELLOW + "[*] " + ChatClientImpl.CYAN 
+                                    + "Uso: \"$java es.ubu.lsi.client.ChatClientImpl <servidor> <puerto> <usuario>\"\n" + ChatClientImpl.RESET);
+            System.out.println(ChatClientImpl.YELLOW + "[*] " + ChatClientImpl.CYAN + "En caso de no poner parámetros se usarán los valores por defecto.\n" 
+                                    + ChatClientImpl.RESET);
             System.exit(1);
         }
 		
-		String server = args[0];
-	    port = Integer.parseInt(args[1]);
-	    String username = args[2];
+		String server = args.length > 0 ? args[0] : ChatClientImpl.DEFAULT_SERVER;
+	    int port = args.length > 0 ? Integer.parseInt(args[1]) : ChatClientImpl.DEFAULT_PORT;
+	    String username = args.length > 0 ? args[2] : ChatClientImpl.DEFAULT_USER;
 	    
 	    ChatClientImpl cliente = new ChatClientImpl(server, port, username);
 	    
@@ -248,36 +267,7 @@ public class ChatClientImpl implements ChatClient {
 
 
 	    } else {
-	    	Scanner scanner = new Scanner(System.in);
-	    	
-	    	while (cliente.carryOn) {
-	    		String input = scanner.nextLine();
-	    		
-                switch (input.toUpperCase()) {
-                    case "LOGOUT":
-                        String logoutText = cliente.username + " patrocina el mensaje: logout";
-                        ChatMessage logoutMsg = new ChatMessage(cliente.id, MessageType.LOGOUT, logoutText);
-                        cliente.sendMessage(logoutMsg);
-                        cliente.carryOn = false;
-                        break;
-                    case "SHUTDOWN":
-                        String shutdownText = cliente.username + " patrocina el mensaje: shutdown";
-                        ChatMessage shutdownMsg = new ChatMessage(cliente.id, MessageType.SHUTDOWN, shutdownText);
-                        cliente.sendMessage(shutdownMsg);
-                        cliente.carryOn = false;
-                        break;
-                    case "MESSAGE":
-                        String messageText = cliente.username + " patrocina el mensaje: " + input;
-                        ChatMessage message = new ChatMessage(cliente.id, MessageType.MESSAGE, messageText);
-                        cliente.sendMessage(message);
-                        break;
-                    default:
-                        System.err.printf(ChatClientImpl.RED + "[!] ERROR: No se reconoce el tipo de mensaje.\n" + ChatClientImpl.RESET);
-                        break;
-                }
-            }
-            scanner.close();
-            cliente.disconnect();
+            System.out.println(ChatClientImpl.YELLOW + "[*] " + ChatClientImpl.CYAN + "Cliente inicializado correctamente.\n" + ChatClientImpl.RESET);
         }
 	}
 }
