@@ -9,6 +9,9 @@ import es.ubu.lsi.common.ChatMessage;
  * @since 1.0
  * 
  * @author Ibai Moya Aroz
+ * 
+ * @see es.ubu.lsi.client.ChatClientImpl
+ * @see es.ubu.lsi.common.ChatMessage
  */
 public interface ChatClient {
 

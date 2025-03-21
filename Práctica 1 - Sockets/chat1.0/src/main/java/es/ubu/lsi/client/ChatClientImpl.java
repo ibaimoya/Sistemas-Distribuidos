@@ -20,7 +20,9 @@ import es.ubu.lsi.common.ChatMessage.MessageType;
  * 
  * @author Ibai Moya Aroz
  * 
- * @see ChatClient
+ * @see es.ubu.lsi.client.ChatClient
+ * @see es.ubu.lsi.common.ChatMessage
+ * @see es.ubu.lsi.common.ChatMessage.MessageType
  */
 public class ChatClientImpl implements ChatClient {
 
