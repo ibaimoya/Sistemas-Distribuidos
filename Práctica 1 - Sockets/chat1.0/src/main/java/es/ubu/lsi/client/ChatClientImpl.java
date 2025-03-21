@@ -1,9 +1,13 @@
 package es.ubu.lsi.client;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 import es.ubu.lsi.common.ChatMessage;
@@ -40,7 +44,7 @@ public class ChatClientImpl implements ChatClient {
     private String username;
 
     /** Nombre de usuario del cliente. */
-    private static int port = ChatClientImpl.DEFAULT_PORT;
+    private int port = ChatClientImpl.DEFAULT_PORT;
 
     /** Flag para mantener la conexión. */
     private boolean carryOn = true;
@@ -48,14 +52,17 @@ public class ChatClientImpl implements ChatClient {
     /** Identificador del cliente. */
     private int id;
 
-
+    /* Elementos de la conexión. */
     private Socket socket;
-	private ObjectInputStream input;
-	private ObjectOutputStream output;
 	
+    /** Flujo de entrada actual. */
+    private BufferedReader buffer;
 
     /** Color rojo. */
     private static final String RED = "\u001B[31m";
+
+    /** Color verde. */
+    private static final String GREEN = "\u001B[32m";
 
     /** Color amarillo. */
     private static final String YELLOW = "\u001B[33m";
@@ -124,17 +131,28 @@ public class ChatClientImpl implements ChatClient {
 
     @Override
     public boolean start() {
+
+        /* Flujo de entrada. */
+        BufferedReader input;
+
+        /* Flujo de salida. */
+        PrintWriter output;
+        
+        /* True = tarea exitosa, False en caso contrario. */
         boolean success;
 
         try {
             /* Se inicializan los elementos necesarios para la conexión. */
             this.socket = new Socket(this.server, this.port);
-            this.output = new ObjectOutputStream(this.socket.getOutputStream());
-            this.input = new ObjectInputStream(this.socket.getInputStream());
+            output = new PrintWriter(this.socket.getOutputStream(), true);
+            input = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), StandardCharsets.UTF_8));
 
             /* Se inicializa el hilo que escucha los mensajes del servidor. */
+            this.buffer = input;
             ChatClientListener clientListener = new ChatClientListener();
             new Thread(clientListener).start();
+
+            checkMsgType(new BufferedReader(new InputStreamReader(System.in)));
 
             success = true;
             
@@ -147,14 +165,52 @@ public class ChatClientImpl implements ChatClient {
         return success;
     }
 
+    /** 
+     * Método que comprueba el tipo de mensaje recibido y actúa en consecuencia.
+     * 
+     * @param bufferedInput Flujo de entrada de mensajes.
+     */
+    private void checkMsgType (BufferedReader bufferedInput) {
+        try {
+            String message;
+
+            while (carryOn) {
+
+                message = bufferedInput.readLine();
+ 
+
+                switch (message.toUpperCase()) {
+                    case ChatClientImpl.LOGOUT:
+                        sendMessage(new ChatMessage(this.id, MessageType.LOGOUT, message));
+                        disconnect();
+                        break;
+
+                    case ChatClientImpl.SHUTDOWN:
+                        sendMessage(new ChatMessage(this.id, MessageType.SHUTDOWN, message));
+                        disconnect();
+                        break;
+
+                    default:
+                        sendMessage(new ChatMessage(this.id, ChatMessage.MessageType.MESSAGE, "[" + this.username + "] " + message));
+                        break;
+                }
+            }
+
+        } catch (IOException ioException) {
+            System.err.printf(ChatClientImpl.RED + "[!] Error al interpretar el mensaje: " + ChatClientImpl.RESET + "%s\n", ioException.getMessage());
+        }
+    }
+
     @Override
     public void sendMessage(ChatMessage message) {
         try {
+            PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
+            output.println(message.getMessage());
+            System.out.println(ChatClientImpl.YELLOW + "[*] " + ChatClientImpl.GREEN + this.username + ChatClientImpl.CYAN 
+                                        + " envía el mensaje: " + ChatClientImpl.RESET + message.getMessage());
 
-            /* Se escribe el mensaje en el flujo de salida. */
-            output.writeObject(message);
         } catch (IOException ioException) {
-            System.err.printf(ChatClientImpl.RED + "[!] Error de entrada / salida: " + ChatClientImpl.RESET + "%s\n", ioException.getMessage());
+            System.err.printf(ChatClientImpl.RED + "[!] Error al enviar el mensaje: " + ChatClientImpl.RESET + "%s\n", ioException.getMessage());
         }
     }
 
@@ -164,19 +220,11 @@ public class ChatClientImpl implements ChatClient {
             System.out.println(ChatClientImpl.YELLOW + "[*]" + ChatClientImpl.CYAN + " Desconectando del sistema..." + ChatClientImpl.RESET + "\n");
             carryOn = false;
 
-            /* Se cierran los elementos de la conexión. */
+            /* Se cierran el socket de la conexión. */
             if (socket != null){
                 socket.close();
             }
-
-            if (input != null){
-                input.close();
-            }
-
-            if (output != null){
-                output.close();
-            }
-
+            
         } catch (IOException ioException) {
             System.err.printf(ChatClientImpl.RED + "[!] Error al cerrar los elementos: " + ChatClientImpl.RESET + "%s\n", ioException.getMessage());
         }
