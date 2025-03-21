@@ -63,6 +63,8 @@ public class ChatClientImpl implements ChatClient {
     /** Flujo de entrada actual. */
     private BufferedReader buffer;
 
+
+
     /** Color rojo. */
     private static final String RED = "\u001B[31m";
 
@@ -78,6 +80,8 @@ public class ChatClientImpl implements ChatClient {
     /** Reset de color. */
     private static final String RESET = "\u001B[0m";
 
+
+    
     /**
      * Constructor de ChatClientImpl.
      * 
