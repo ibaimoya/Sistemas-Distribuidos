@@ -64,6 +64,12 @@ public class ChatServerImpl implements ChatServer {
     /** Reset de color. */
     private static final String RESET = "\u001B[0m";
 
+    /**
+     * Constructor de ChatServerImpl.
+     */
+    public ChatServerImpl(int port) {
+        this.port = port;
+    }
 
     @Override
     public void startup() {
@@ -71,9 +77,9 @@ public class ChatServerImpl implements ChatServer {
 
         try{
             this.alive = true;
-            System.out.printf(ChatServerImpl.GREEN + "[*] Iniciando servidor en el puerto %d\n" + ChatServerImpl.RESET, this.port);
-
-            this.generalSocket = new ServerSocket(this.port);
+            System.out.printf(ChatServerImpl.YELLOW + "[*] " + ChatServerImpl.CYAN + "Iniciando servidor en el puerto" + 
+                                ChatServerImpl.GREEN + " %d\n" + ChatServerImpl.CYAN + "...\n" + ChatServerImpl.RESET, port); 
+                                this.generalSocket = new ServerSocket(this.port);
 
             Socket socket;
             
@@ -213,6 +219,17 @@ public class ChatServerImpl implements ChatServer {
             }
         }
         return null;
+    }
+
+    public static void main(String[] args) {
+
+        int port = args.length > 0 ? Integer.parseInt(args[0]) : ChatServerImpl.DEFAULT_PORT;
+
+      
+
+        ChatServerImpl server = new ChatServerImpl(port);
+        server.startup();
+
     }
 
     /**
