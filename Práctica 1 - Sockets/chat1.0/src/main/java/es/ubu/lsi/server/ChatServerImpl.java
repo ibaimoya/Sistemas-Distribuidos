@@ -96,7 +96,10 @@ public class ChatServerImpl implements ChatServer {
 
                 } else {
                     ArrayList<Object> clientData = new ArrayList<>();
-                    clientData.add(this.clientId);
+
+                    int id = this.clientId;
+
+                    clientData.add(id);
                     clientData.add(socket);
                     clientData.add(sdf.format(new Date()));
 
@@ -107,7 +110,7 @@ public class ChatServerImpl implements ChatServer {
                     clientsMap.put(username, clientData);
                     this.clientId++;
 
-                    ServerThreadForClient clientThread = new ServerThreadForClient(clientId, username);
+                    ServerThreadForClient clientThread = new ServerThreadForClient(id, username);
                     clientThread.start();
                 }
             }
@@ -175,7 +178,7 @@ public class ChatServerImpl implements ChatServer {
 
         if (sourceUsername != null) {
             String messageToSend = ChatServerImpl.YELLOW + "[*] " + ChatServerImpl.CYAN + "Mensaje de " + ChatServerImpl.GREEN 
-                                + sourceUsername + " [" + time + "]: " + ChatServerImpl.CYAN + ": " + ChatServerImpl.RESET 
+                                + sourceUsername + ChatServerImpl.CYAN + " [" + time + "]: " + ChatServerImpl.CYAN + ": " + ChatServerImpl.RESET 
                                 + message.getMessage() + "\n" ;
 
             for (Map.Entry<String, ArrayList<Object>> user : clientsMap.entrySet()) {
@@ -200,7 +203,7 @@ public class ChatServerImpl implements ChatServer {
         if (username != null) {
             clientsMap.remove(username);
             System.out.printf(ChatServerImpl.YELLOW + "[*] " + ChatServerImpl.CYAN + "El cliente " + ChatServerImpl.GREEN 
-                                + username + ChatServerImpl.CYAN + " ha sido eliminado del servidor.\n");
+                                + username + ChatServerImpl.CYAN + " ha salido del servidor.\n");
         } else {
             System.err.printf(ChatServerImpl.RED + "[!] No se ha encontrado el cliente con identificador %d.\n" + ChatServerImpl.RESET, id);
         }
@@ -280,7 +283,7 @@ public class ChatServerImpl implements ChatServer {
                 this.output = new PrintWriter(clientSocket.getOutputStream(), true);
 
                 output.println(ChatServerImpl.YELLOW + "[*] " + ChatServerImpl.CYAN + "¡Bienvenido al chat, " + ChatServerImpl.GREEN 
-                                    + username + ChatServerImpl.CYAN + "!");
+                                    + username + ChatServerImpl.CYAN + "!" + ChatServerImpl.RESET);
 
             } catch (IOException ioException) {
                 System.err.printf(ChatServerImpl.RED + "[!] Error al tratar de inicializar el hilo para el cliente: " + ChatServerImpl.RESET + "%s\n", ioException.getMessage());
@@ -293,6 +296,9 @@ public class ChatServerImpl implements ChatServer {
             while (alive) {
                 try {
                     String message = input.readLine();
+                    if (message == null) {
+                        break;
+                    }
                     String[] words = message.split(" ");
                     String serverMessage;
                   

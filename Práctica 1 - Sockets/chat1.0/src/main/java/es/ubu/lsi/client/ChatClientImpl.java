@@ -110,41 +110,15 @@ public class ChatClientImpl implements ChatClient {
         @Override
         public void run() {
             try {
-                /* Mientras el cliente esté activo (carryOn es true), se espera recibir mensajes. */
-                while (carryOn) {
-                    
-                    /* Lee un objeto del flujo de entrada. */
-                    Object receivedObject  = buffer.read();
-                    
-                    /* Verifica si el objeto recibido es de tipo ChatMessage 
-                    *  para transformarlo si es necesario. */
-                    if (receivedObject  instanceof ChatMessage) {
-
-                        ChatMessage receivedMsg = (ChatMessage) receivedObject ;
-
-                        System.out.println(receivedMsg.getId() + ": " + receivedMsg.getMessage());
-                    }
-
-
-                }
                 String line;
-                String time;
-                String timestamp;
 
-                line = buffer.readLine();
+                while (carryOn && (line = buffer.readLine()) != null) {
 
-                while (line != null) {
-                    time = new SimpleDateFormat("HH:mm:ss").format(new Date());
-                    timestamp = "[" + time + "]";
-
-                    System.out.println(ChatClientImpl.YELLOW + "[*] " + ChatClientImpl.CYAN + timestamp + " " + 
-                                            username + ": " +ChatClientImpl.RESET + line);
-                    line = buffer.readLine();
+                    System.out.println(line);
                 }
             
             } catch (IOException ioException) {
-
-                System.err.printf(ChatClientImpl.RED + "[!] Error de conexsión con el servidor: " + ChatClientImpl.RESET + "%s\n", ioException.getMessage());
+                System.err.printf(ChatClientImpl.RED + "[!] Error de conexión con el servidor: " + ChatClientImpl.RESET + "%s\n", ioException.getMessage());
             }
         }
     }
@@ -161,6 +135,11 @@ public class ChatClientImpl implements ChatClient {
         try {
             /* Se inicializan los elementos necesarios para la conexión. */
             this.socket = new Socket(this.server, this.port);
+
+            /* Se envía el nombre de usuario al servidor. */
+            PrintWriter output = new PrintWriter(this.socket.getOutputStream(), true);
+            output.println(this.username);
+
             input = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), StandardCharsets.UTF_8));
 
             /* Se inicializa el hilo que escucha los mensajes del servidor. */
@@ -199,15 +178,18 @@ public class ChatClientImpl implements ChatClient {
                     case ChatClientImpl.LOGOUT:
                         sendMessage(new ChatMessage(this.id, MessageType.LOGOUT, message));
                         disconnect();
+
+                        // Informa de la desconexion correcta al usuario
+                        System.out.println(ChatClientImpl.YELLOW + "[*] " + ChatClientImpl.CYAN + "Te has desconectado correctamente del servidor." 
+                                            + ChatClientImpl.RESET);
                         break;
 
                     case ChatClientImpl.SHUTDOWN:
                         sendMessage(new ChatMessage(this.id, MessageType.SHUTDOWN, message));
-                        disconnect();
                         break;
 
                     default:
-                        sendMessage(new ChatMessage(this.id, ChatMessage.MessageType.MESSAGE, "[" + this.username + "] " + message));
+                        sendMessage(new ChatMessage(this.id, ChatMessage.MessageType.MESSAGE, message));
                         break;
                 }
             }
@@ -225,7 +207,7 @@ public class ChatClientImpl implements ChatClient {
 
             PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
             output.println(message.getMessage());
-            System.out.println(ChatClientImpl.YELLOW + "[*] " + timestamp + ChatClientImpl.GREEN + this.username + ChatClientImpl.CYAN 
+            System.out.println(ChatClientImpl.YELLOW + "[*] " + timestamp + ChatClientImpl.GREEN + " " + this.username + ChatClientImpl.CYAN 
                                         + " envía el mensaje: " + ChatClientImpl.RESET + message.getMessage());
 
         } catch (IOException ioException) {
