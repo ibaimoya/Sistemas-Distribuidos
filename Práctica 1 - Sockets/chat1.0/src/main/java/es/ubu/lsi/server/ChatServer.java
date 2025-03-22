@@ -42,5 +42,5 @@ public interface ChatServer {
      * Elimina un cliente de la lista de clientes conectados al servidor.
      * Se llama cuando un cliente se desconecta o necesita ser eliminado del servidor.
      */
-    public void remove();
+    public void remove(int id);
 }
