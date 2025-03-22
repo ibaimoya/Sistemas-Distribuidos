@@ -93,6 +93,11 @@ public class ChatServerImpl implements ChatServer {
                     clientData.add(this.clientId);
                     clientData.add(socket);
                     clientData.add(sdf.format(new Date()));
+
+                    ArrayList<String> bannedUsersList = new ArrayList<>();
+
+                    clientData.add(bannedUsersList);
+
                     clientsMap.put(username, clientData);
                     this.clientId++;
 
@@ -157,7 +162,30 @@ public class ChatServerImpl implements ChatServer {
 
     @Override
     public void broadcast(ChatMessage message) {
-        // TODO Auto-generated method stub
+        int sourceId = message.getId();
+        String sourceUsername = findUserById(sourceId);
+        
+        String time = sdf.format(new Date());
+
+        if (sourceUsername != null) {
+            String messageToSend = ChatServerImpl.YELLOW + "[*] " + ChatServerImpl.CYAN + "Mensaje de " + ChatServerImpl.GREEN 
+                                + sourceUsername + " [" + time + "]: " + ChatServerImpl.CYAN + ": " + ChatServerImpl.RESET 
+                                + message.getMessage() + "\n" ;
+
+            for (Map.Entry<String, ArrayList<Object>> user : clientsMap.entrySet()) {
+                if ((int) user.getValue().get(0) != sourceId) {
+                    try {
+                        PrintWriter output = new PrintWriter(((Socket) user.getValue().get(1)).getOutputStream(), true);
+                        output.println(messageToSend);
+                    } catch (IOException ioException) {
+                        System.err.printf(ChatServerImpl.RED + "[!] Error al enviar el mensaje a " + ChatServerImpl.GREEN 
+                                            + user.getKey() + ChatServerImpl.RESET + ": %s\n", ioException.getMessage());
+                    }
+                }
+            }
+        } else {
+            System.err.printf(ChatServerImpl.RED + "[!] No se ha encontrado el cliente con identificador %d.\n" + ChatServerImpl.RESET, sourceId);
+        }
     }
 
     @Override
@@ -207,8 +235,23 @@ public class ChatServerImpl implements ChatServer {
 
         /** Flujo de salida para el cliente. */
         private PrintWriter output;
+        
+        /** Sintaxis del comando logout. */
+        private static final String LOGOUT = "LOGOUT";
+
+        /** Sintaxis del comando ban. */
+        private static final String BAN = "BAN";
+
+        /** Sintaxis del comando unban. */
+        private static final String PARDON = "UNBAN";
 
 
+        /**
+         * Constructor de ServerThreadForClient.
+         * 
+         * @param id Identificador del cliente
+         * @param username Nombre de usuario del cliente
+         */
         public ServerThreadForClient(int id, String username) {
             this.id = id;
             this.username = username;  
@@ -230,7 +273,95 @@ public class ChatServerImpl implements ChatServer {
         @Override
         public void run() {
 
-        }
-    }
+            while (alive) {
+                try {
+                    String message = input.readLine();
+                    String[] words = message.split(" ");
+                    String serverMessage;
+                  
+                    switch (words[0].toUpperCase()) {
+                        case ServerThreadForClient.LOGOUT:
+                            serverMessage = ChatServerImpl.YELLOW +"[*] " + ChatServerImpl.CYAN + "El usuario " +
+                                      ChatServerImpl.GREEN + this.username + ChatServerImpl.CYAN + " ha abandonado el chat."
+                                      + ChatServerImpl.RESET;
 
+                            ChatMessage logoutMessage = new ChatMessage(this.id, ChatMessage.MessageType.LOGOUT, serverMessage);
+                            broadcast(logoutMessage);
+                            remove(this.id);
+                            break;
+
+                        case ServerThreadForClient.BAN:
+                            if (words.length != 2){
+                                output.println(ChatServerImpl.RED + "[!] Debes indicar el nombre de usuario a banear.\n" + ChatServerImpl.RESET);
+                                output.println(ChatServerImpl.YELLOW + "[*] " + ChatServerImpl.CYAN + "Uso: ban <nombre_usuario>\n" + ChatServerImpl.RESET);
+                                break;
+                            }
+
+                            banUser(this.id, words[1]);
+                            break;
+
+                        case ServerThreadForClient.PARDON: 
+                            if (words.length != 2){
+                                output.println(ChatServerImpl.RED + "[!] Debes indicar el nombre de usuario a perdonar.\n" + ChatServerImpl.RESET);
+                                output.println(ChatServerImpl.YELLOW + "[*] " + ChatServerImpl.CYAN + "Uso: unban <nombre_usuario>\n" + ChatServerImpl.RESET);
+                                break;
+                            }
+                            
+                            pardonUser(this.id, words[1]);
+                            break;
+
+                        default:
+                            if (!message.isEmpty() && !message.equals("\n")) {
+                                ChatMessage chatMessage = new ChatMessage(this.id, ChatMessage.MessageType.MESSAGE, message);
+                                broadcast(chatMessage);   
+                            }
+                            break;
+                    }
+                } catch (IOException ioException) {
+                    System.err.printf(ChatServerImpl.RED + "[!] Error al recibir el mensaje del cliente " + ChatServerImpl.GREEN 
+                                        + this.username + ChatServerImpl.RESET + ": %s\n", ioException.getMessage());
+                    break;
+                }
+            }
+        }
+        
+        /**
+         * Método que permite vetar a un usuario siendo otro usuario.
+         * 
+         * @param idSource Identificador del usuario que banea
+         * @param bannedUsername Nombre de usuario del usuario baneado
+         */
+        private void banUser(int idSource, String bannedUsername){
+            String sourceUsername = findUserById(idSource); 
+
+            ((ArrayList<String>) clientsMap.get(sourceUsername).get(3)).add(bannedUsername);
+
+            String banMessage= ChatServerImpl.YELLOW + "[*] " + ChatServerImpl.CYAN + "El usuario " + ChatServerImpl.GREEN 
+                                + sourceUsername + ChatServerImpl.CYAN + " ha baneado a " + ChatServerImpl.GREEN
+                                + bannedUsername + ChatServerImpl.CYAN + " del chat." + ChatServerImpl.RESET;
+
+            broadcast(new ChatMessage(idSource, ChatMessage.MessageType.MESSAGE, banMessage));
+
+        }
+        
+        
+        /**
+         * Método que indulta a un usuario vetado del chat de la 
+         * lista de vetados de otro usuario.
+         * 
+         * @param idSource Identificador del usuario que perdona
+         * @param pardonedUsername Nombre de usuario del usuario perdonado
+         */
+        private void pardonUser(int idSource, String pardonedUsername){
+            String sourceUsername = findUserById(idSource); 
+
+            ((ArrayList<String>) clientsMap.get(sourceUsername).get(3)).remove(pardonedUsername);
+
+            String pardonMessage= ChatServerImpl.YELLOW + "[*] " + ChatServerImpl.CYAN + "El usuario " + ChatServerImpl.GREEN 
+                                + sourceUsername + ChatServerImpl.CYAN + " ha quitado su veto a " + ChatServerImpl.GREEN
+                                + pardonedUsername + ChatServerImpl.CYAN + " ." + ChatServerImpl.RESET;
+
+            broadcast(new ChatMessage(idSource, ChatMessage.MessageType.MESSAGE, pardonMessage));
+        }
+    }   
 }
