@@ -220,9 +220,12 @@ public class ChatClientImpl implements ChatClient {
     @Override
     public void sendMessage(ChatMessage message) {
         try {
+            String time = new SimpleDateFormat("HH:mm:ss").format(new Date());
+            String timestamp = ChatClientImpl.CYAN + "[" + time + "]" + ChatClientImpl.RESET;
+
             PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
             output.println(message.getMessage());
-            System.out.println(ChatClientImpl.YELLOW + "[*] " + ChatClientImpl.GREEN + this.username + ChatClientImpl.CYAN 
+            System.out.println(ChatClientImpl.YELLOW + "[*] " + timestamp + ChatClientImpl.GREEN + this.username + ChatClientImpl.CYAN 
                                         + " envía el mensaje: " + ChatClientImpl.RESET + message.getMessage());
 
         } catch (IOException ioException) {
