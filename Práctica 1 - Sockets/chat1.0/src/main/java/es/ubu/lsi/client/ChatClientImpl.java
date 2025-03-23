@@ -64,7 +64,6 @@ public class ChatClientImpl implements ChatClient {
     private BufferedReader buffer;
 
 
-
     /** Color rojo. */
     private static final String RED = "\u001B[31m";
 
@@ -119,9 +118,8 @@ public class ChatClientImpl implements ChatClient {
             
             } catch (IOException ioException) {
 
-                if (carryOn) {
-                    System.err.printf(ChatClientImpl.RED + "[!] Error de conexión con el servidor: " + ChatClientImpl.RESET + "%s\n", ioException.getMessage());
-                }
+                /* Ignora las excepciones en este caso. */
+
             } finally {
                 try {
                     if (socket != null && !socket.isClosed()) {
@@ -198,6 +196,8 @@ public class ChatClientImpl implements ChatClient {
 
                     case ChatClientImpl.SHUTDOWN:
                         sendMessage(new ChatMessage(this.id, MessageType.SHUTDOWN, message));
+                        
+
                         break;
 
                     default:
@@ -232,12 +232,12 @@ public class ChatClientImpl implements ChatClient {
                 messageToSend = messageToSend.toUpperCase();
 
                 output.println(messageToSend);
-                System.out.println(ChatClientImpl.YELLOW + "[*] " + timestamp + ChatClientImpl.GREEN + " " + this.username + ChatClientImpl.CYAN 
+                System.out.println(ChatClientImpl.YELLOW + "\r[*] " + timestamp + ChatClientImpl.GREEN + " " + this.username + ChatClientImpl.CYAN 
                                             + " envía el comando: " + ChatClientImpl.RESET + messageToSend);
             }else if (!messageToSend.equals("") && !messageToSend.equals("\n")) {
             
                 output.println(messageToSend);
-                System.out.println(ChatClientImpl.YELLOW + "[*] " + timestamp + ChatClientImpl.GREEN + " " + this.username + ChatClientImpl.CYAN 
+                System.out.println(ChatClientImpl.YELLOW + "\r[*] " + timestamp + ChatClientImpl.GREEN + " " + this.username + ChatClientImpl.CYAN 
                                             + " envía el mensaje: " + ChatClientImpl.RESET + messageToSend);    
             }
 
@@ -249,7 +249,7 @@ public class ChatClientImpl implements ChatClient {
 
     @Override
     public void disconnect() {
-        System.out.println(ChatClientImpl.YELLOW + "[*]" + ChatClientImpl.CYAN + " Desconectando del sistema..." + ChatClientImpl.RESET + "\n");
+        System.out.println(ChatClientImpl.YELLOW + "[*]" + ChatClientImpl.CYAN + " Desconectando del sistema..." + ChatClientImpl.RESET);
         carryOn = false;
 
         if (this.buffer != null) {
@@ -268,7 +268,7 @@ public class ChatClientImpl implements ChatClient {
      */
     public static void main(String[] args) {
         if ((args.length < 3 || args.length > 3) && args.length != 0) {
-            System.err.printf(ChatClientImpl.RED + "[!] Error en el formato de entrada ().\n" + ChatClientImpl.RESET);
+            System.err.printf(ChatClientImpl.RED + "[!] Error en el formato de entrada.\n" + ChatClientImpl.RESET);
             System.out.println(ChatClientImpl.YELLOW + "[*] " + ChatClientImpl.CYAN 
                                     + "Uso: \"$java es.ubu.lsi.client.ChatClientImpl <servidor> <puerto> <usuario>\"\n" + ChatClientImpl.RESET);
             System.out.println(ChatClientImpl.YELLOW + "[*] " + ChatClientImpl.CYAN + "En caso de no poner parámetros se usarán los valores por defecto.\n" 
