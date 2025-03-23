@@ -43,7 +43,12 @@ public class ChatServerImpl implements ChatServer {
     /** Flag para mantener la conexión. */
     private boolean alive = true;
     
-    /** Mapa de clientes conectados al servidor. */
+    /** Mapa de clientes conectados al servidor. 
+     * La key serán los nombres de usuario.
+     * En la posición 0 del array estará la posición,
+     * en la 1 el socket, en la 2 la fecha de creación
+     * y en la 3 la lista de usuarios vetados.
+    */
     private Map<String, ArrayList<Object>> clientsMap = new HashMap<>();
 
     /** Socket general del servidor. */
@@ -78,7 +83,7 @@ public class ChatServerImpl implements ChatServer {
         try{
             this.alive = true;
             System.out.printf(ChatServerImpl.YELLOW + "[*] " + ChatServerImpl.CYAN + "Iniciando servidor en el puerto" + 
-                                ChatServerImpl.GREEN + " %d\n" + ChatServerImpl.CYAN + "...\n" + ChatServerImpl.RESET, port); 
+                                ChatServerImpl.GREEN + " %d" + ChatServerImpl.CYAN + "...\n" + ChatServerImpl.RESET, port); 
                                 this.generalSocket = new ServerSocket(this.port);
 
             Socket socket;
@@ -174,21 +179,40 @@ public class ChatServerImpl implements ChatServer {
         int sourceId = message.getId();
         String sourceUsername = findUserById(sourceId);
         
+        ArrayList<String> bannedUsers = getBannedUsers(sourceUsername);
+
         String time = sdf.format(new Date());
 
         if (sourceUsername != null) {
-            String messageToSend = ChatServerImpl.YELLOW + "[*] " + ChatServerImpl.CYAN + "Mensaje de " + ChatServerImpl.GREEN 
-                                + sourceUsername + ChatServerImpl.CYAN + " [" + time + "]: " + ChatServerImpl.CYAN + ": " + ChatServerImpl.RESET 
-                                + message.getMessage() + "\n" ;
+            String originalMessage = message.getMessage();
+            String messageToSend;
 
+            if(message.getType() != ChatMessage.MessageType.LOGOUT && message.getType() != ChatMessage.MessageType.SHUTDOWN){
+            
+            messageToSend = ChatServerImpl.YELLOW + "[*] " + ChatServerImpl.CYAN + "Mensaje de " + ChatServerImpl.GREEN 
+                                + sourceUsername + ChatServerImpl.CYAN + " [" + time + "]: " + ChatServerImpl.CYAN + ": " + ChatServerImpl.RESET 
+                                + originalMessage + "\n" ;
+            
+            } else {
+                messageToSend = originalMessage;
+            }
             for (Map.Entry<String, ArrayList<Object>> user : clientsMap.entrySet()) {
+                System.out.println(user.getKey());
+                System.out.println(bannedUsers.contains(user.getKey()));
+                String recipient = user.getKey();
+
                 if ((int) user.getValue().get(0) != sourceId) {
-                    try {
-                        PrintWriter output = new PrintWriter(((Socket) user.getValue().get(1)).getOutputStream(), true);
-                        output.println(messageToSend);
-                    } catch (IOException ioException) {
-                        System.err.printf(ChatServerImpl.RED + "[!] Error al enviar el mensaje a " + ChatServerImpl.GREEN 
-                                            + user.getKey() + ChatServerImpl.RESET + ": %s\n", ioException.getMessage());
+                    @SuppressWarnings("unchecked")
+                    ArrayList<String> recipientBanned = (ArrayList<String>) clientsMap.get(recipient).get(3);
+
+                    if (!recipientBanned.contains(sourceUsername)) {
+                        try {
+                            PrintWriter output = new PrintWriter(((Socket) user.getValue().get(1)).getOutputStream(), true);
+                            output.println(messageToSend);
+                        } catch (IOException ioException) {
+                            System.err.printf(ChatServerImpl.RED + "[!] Error al enviar el mensaje a " + ChatServerImpl.GREEN 
+                                                + recipient + ChatServerImpl.RESET + ": %s\n", ioException.getMessage());
+                        }
                     }
                 }
             }
@@ -203,7 +227,7 @@ public class ChatServerImpl implements ChatServer {
         if (username != null) {
             clientsMap.remove(username);
             System.out.printf(ChatServerImpl.YELLOW + "[*] " + ChatServerImpl.CYAN + "El cliente " + ChatServerImpl.GREEN 
-                                + username + ChatServerImpl.CYAN + " ha salido del servidor.\n");
+                                + username + ChatServerImpl.CYAN + " ha salido del servidor.\n" + ChatServerImpl.RESET);
         } else {
             System.err.printf(ChatServerImpl.RED + "[!] No se ha encontrado el cliente con identificador %d.\n" + ChatServerImpl.RESET, id);
         }
@@ -227,8 +251,6 @@ public class ChatServerImpl implements ChatServer {
     public static void main(String[] args) {
 
         int port = args.length > 0 ? Integer.parseInt(args[0]) : ChatServerImpl.DEFAULT_PORT;
-
-      
 
         ChatServerImpl server = new ChatServerImpl(port);
         server.startup();
@@ -347,7 +369,7 @@ public class ChatServerImpl implements ChatServer {
                 }
             }
         }
-        
+    }    
         /**
          * Método que permite vetar a un usuario siendo otro usuario.
          * 
@@ -361,10 +383,31 @@ public class ChatServerImpl implements ChatServer {
 
             String banMessage= ChatServerImpl.YELLOW + "[*] " + ChatServerImpl.CYAN + "El usuario " + ChatServerImpl.GREEN 
                                 + sourceUsername + ChatServerImpl.CYAN + " ha baneado a " + ChatServerImpl.GREEN
-                                + bannedUsername + ChatServerImpl.CYAN + " del chat." + ChatServerImpl.RESET;
+                                + bannedUsername + ChatServerImpl.CYAN + ".\n" + ChatServerImpl.RESET;
 
             broadcast(new ChatMessage(idSource, ChatMessage.MessageType.MESSAGE, banMessage));
 
+            try{
+                Socket socketCliente = (Socket) clientsMap.get(sourceUsername).get(1);
+                PrintWriter clientOutput = new PrintWriter(socketCliente.getOutputStream(), true);
+
+                clientOutput.println(ChatServerImpl.YELLOW + "[*] " + ChatServerImpl.CYAN + "Has baneado con éxito a "
+                                    + ChatServerImpl.GREEN + bannedUsername + ChatServerImpl.CYAN + "."
+                                    + ChatServerImpl.RESET + "\n");
+                
+                System.out.println(ChatServerImpl.YELLOW + "[*] " + ChatServerImpl.CYAN + "El usuario "
+                                    + ChatServerImpl.GREEN + sourceUsername + ChatServerImpl.CYAN + " ha baneado a "
+                                    + ChatServerImpl.GREEN + bannedUsername + ChatServerImpl.CYAN + ". "
+                                    + ChatServerImpl.RESET + "\n");
+
+            } catch (IOException ioException){
+                System.err.printf(ChatServerImpl.RED + "[!] Error al informar del baneo a " + ChatServerImpl.GREEN 
+                + bannedUsername + ChatServerImpl.RESET + ": %s\n", ioException.getMessage());
+            }
+
+            for (String baneado : (ArrayList<String>) clientsMap.get(sourceUsername).get(3)) {
+                System.out.println("Usuario baneado: " + baneado + "\n");
+            }        
         }
         
         
@@ -377,14 +420,54 @@ public class ChatServerImpl implements ChatServer {
          */
         private void pardonUser(int idSource, String pardonedUsername){
             String sourceUsername = findUserById(idSource); 
-
+        
             ((ArrayList<String>) clientsMap.get(sourceUsername).get(3)).remove(pardonedUsername);
-
-            String pardonMessage= ChatServerImpl.YELLOW + "[*] " + ChatServerImpl.CYAN + "El usuario " + ChatServerImpl.GREEN 
-                                + sourceUsername + ChatServerImpl.CYAN + " ha quitado su veto a " + ChatServerImpl.GREEN
-                                + pardonedUsername + ChatServerImpl.CYAN + " ." + ChatServerImpl.RESET;
-
+        
+            String pardonMessage = ChatServerImpl.YELLOW + "[*] " + ChatServerImpl.CYAN + "El usuario " + ChatServerImpl.GREEN 
+                                    + sourceUsername + ChatServerImpl.CYAN + " ha quitado su veto a " + ChatServerImpl.GREEN
+                                    + pardonedUsername + ChatServerImpl.CYAN + " ." + ChatServerImpl.RESET;
+        
             broadcast(new ChatMessage(idSource, ChatMessage.MessageType.MESSAGE, pardonMessage));
+        
+            try {
+                Socket socketCliente = (Socket) clientsMap.get(sourceUsername).get(1);
+                PrintWriter clientOutput = new PrintWriter(socketCliente.getOutputStream(), true);
+        
+                clientOutput.println(ChatServerImpl.YELLOW + "[*] " + ChatServerImpl.CYAN + "Has quitado el veto a "
+                                    + ChatServerImpl.GREEN + pardonedUsername + ChatServerImpl.CYAN + "."
+                                    + ChatServerImpl.RESET + "\n");
+        
+                System.out.println(ChatServerImpl.YELLOW + "[*] " + ChatServerImpl.CYAN + "El usuario "
+                                    + ChatServerImpl.GREEN + sourceUsername + ChatServerImpl.CYAN + " ha quitado su veto a "
+                                    + ChatServerImpl.GREEN + pardonedUsername + ChatServerImpl.CYAN + ". "
+                                    + ChatServerImpl.RESET + "\n");
+        
+            } catch (IOException ioException) {
+                System.err.printf(ChatServerImpl.RED + "[!] Error al informar el indulto a " + ChatServerImpl.GREEN 
+                                    + pardonedUsername + ChatServerImpl.RESET + ": %s\n", ioException.getMessage());
+            }
         }
-    }   
+    
+    /**
+     * Obtiene un array de nombres de todos los usuarios
+     * a los que ha vetado el usuario que se pasa por 
+     * parámetro.
+     * 
+     * @param sourceUsername Usuario del que se quiere 
+     *                       sacar la lista de vetados.
+     */
+    private ArrayList<String> getBannedUsers(String sourceUsername) {
+
+        /* Si el usuario no existe retorna un array vacío. */
+        if (!clientsMap.containsKey(sourceUsername)) {
+            return new ArrayList<>(); 
+        }
+        
+        ArrayList<Object> clientData = clientsMap.get(sourceUsername);
+        
+        @SuppressWarnings("unchecked")
+        ArrayList<String> bannedUsers = (ArrayList<String>) clientData.get(3);
+        
+        return bannedUsers;
+    }
 }

@@ -37,10 +37,10 @@ public class ChatClientImpl implements ChatClient {
     private static final String DEFAULT_USER = "Usuario";
 
     /** Mensaje de logout. */
-    private static final String LOGOUT = "logout";
+    private static final String LOGOUT = "LOGOUT";
     
     /** Mensaje de shudown. */
-    private static final String SHUTDOWN = "shutdown";
+    private static final String SHUTDOWN = "SHUTDOWN";
 
     /** Servidor al que se conectará el cliente. */
     private String server = ChatClientImpl.DEFAULT_SERVER;
@@ -118,7 +118,19 @@ public class ChatClientImpl implements ChatClient {
                 }
             
             } catch (IOException ioException) {
-                System.err.printf(ChatClientImpl.RED + "[!] Error de conexión con el servidor: " + ChatClientImpl.RESET + "%s\n", ioException.getMessage());
+
+                if (carryOn) {
+                    System.err.printf(ChatClientImpl.RED + "[!] Error de conexión con el servidor: " + ChatClientImpl.RESET + "%s\n", ioException.getMessage());
+                }
+            } finally {
+                try {
+                    if (socket != null && !socket.isClosed()) {
+                        socket.close();
+                    }
+                } catch (IOException ioException2) {
+                    /* Ignora las excepciones en este caso. */
+                }
+                System.exit(0);
             }
         }
     }
@@ -145,7 +157,9 @@ public class ChatClientImpl implements ChatClient {
             /* Se inicializa el hilo que escucha los mensajes del servidor. */
             this.buffer = input;
             ChatClientListener clientListener = new ChatClientListener();
-            new Thread(clientListener).start();
+            Thread thread = new Thread(clientListener);
+            thread.setDaemon(true);
+            thread.start();
 
             checkMsgType(new BufferedReader(new InputStreamReader(System.in)));
 
@@ -155,6 +169,7 @@ public class ChatClientImpl implements ChatClient {
             success = false;
 
             System.err.printf(ChatClientImpl.RED + "[!] Error al tratar de inicializar el cliente: " + ChatClientImpl.RESET + "%s\n", ioException.getMessage());
+            disconnect();
         } 
 
         return success;
@@ -169,19 +184,16 @@ public class ChatClientImpl implements ChatClient {
         try {
             String message;
 
+
             while (this.carryOn) {
 
                 message = bufferedInput.readLine();
- 
-
+                
                 switch (message.toUpperCase()) {
                     case ChatClientImpl.LOGOUT:
                         sendMessage(new ChatMessage(this.id, MessageType.LOGOUT, message));
                         disconnect();
 
-                        // Informa de la desconexion correcta al usuario
-                        System.out.println(ChatClientImpl.YELLOW + "[*] " + ChatClientImpl.CYAN + "Te has desconectado correctamente del servidor." 
-                                            + ChatClientImpl.RESET);
                         break;
 
                     case ChatClientImpl.SHUTDOWN:
@@ -196,6 +208,13 @@ public class ChatClientImpl implements ChatClient {
 
         } catch (IOException ioException) {
             System.err.printf(ChatClientImpl.RED + "[!] Error al interpretar el mensaje: " + ChatClientImpl.RESET + "%s\n", ioException.getMessage());
+        } finally {
+            try {
+                bufferedInput.close();
+            } catch (IOException ioException) {
+                System.err.printf(ChatClientImpl.RED + "[!] Error al cerrar el flujo de entrada: " + ChatClientImpl.RESET + "%s\n", ioException.getMessage());
+                System.exit(1);
+            }
         }
     }
 
@@ -204,11 +223,24 @@ public class ChatClientImpl implements ChatClient {
         try {
             String time = new SimpleDateFormat("HH:mm:ss").format(new Date());
             String timestamp = ChatClientImpl.CYAN + "[" + time + "]" + ChatClientImpl.RESET;
+            
+            String messageToSend = message.getMessage();
 
             PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
-            output.println(message.getMessage());
-            System.out.println(ChatClientImpl.YELLOW + "[*] " + timestamp + ChatClientImpl.GREEN + " " + this.username + ChatClientImpl.CYAN 
-                                        + " envía el mensaje: " + ChatClientImpl.RESET + message.getMessage());
+
+            if (messageToSend.toLowerCase().equals("logout") || messageToSend.toLowerCase().equals("shutdown")) {
+                messageToSend = messageToSend.toUpperCase();
+
+                output.println(messageToSend);
+                System.out.println(ChatClientImpl.YELLOW + "[*] " + timestamp + ChatClientImpl.GREEN + " " + this.username + ChatClientImpl.CYAN 
+                                            + " envía el comando: " + ChatClientImpl.RESET + messageToSend);
+            }else if (!messageToSend.equals("") && !messageToSend.equals("\n")) {
+            
+                output.println(messageToSend);
+                System.out.println(ChatClientImpl.YELLOW + "[*] " + timestamp + ChatClientImpl.GREEN + " " + this.username + ChatClientImpl.CYAN 
+                                            + " envía el mensaje: " + ChatClientImpl.RESET + messageToSend);    
+            }
+
 
         } catch (IOException ioException) {
             System.err.printf(ChatClientImpl.RED + "[!] Error al enviar el mensaje: " + ChatClientImpl.RESET + "%s\n", ioException.getMessage());
@@ -217,17 +249,15 @@ public class ChatClientImpl implements ChatClient {
 
     @Override
     public void disconnect() {
-        try {
-            System.out.println(ChatClientImpl.YELLOW + "[*]" + ChatClientImpl.CYAN + " Desconectando del sistema..." + ChatClientImpl.RESET + "\n");
-            carryOn = false;
+        System.out.println(ChatClientImpl.YELLOW + "[*]" + ChatClientImpl.CYAN + " Desconectando del sistema..." + ChatClientImpl.RESET + "\n");
+        carryOn = false;
 
-            /* Se cierran el socket de la conexión. */
-            if (socket != null){
-                socket.close();
+        if (this.buffer != null) {
+            try {
+                this.buffer.close();
+            } catch (IOException iOException){
+                /* Ignoramos la excepción */
             }
-
-        } catch (IOException ioException) {
-            System.err.printf(ChatClientImpl.RED + "[!] Error al cerrar los elementos: " + ChatClientImpl.RESET + "%s\n", ioException.getMessage());
         }
     }
 
@@ -255,7 +285,6 @@ public class ChatClientImpl implements ChatClient {
 	    if (!cliente.start()) {
             System.err.printf(ChatClientImpl.RED + "[!] ERROR: El cliente no se ha inicializado correctamente.\n" + ChatClientImpl.RESET);
             System.exit(1);
-
 
 	    } else {
             System.out.println(ChatClientImpl.YELLOW + "[*] " + ChatClientImpl.CYAN + "Cliente inicializado correctamente.\n" + ChatClientImpl.RESET);
