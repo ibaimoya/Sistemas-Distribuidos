@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="chat1.0" default="javadoc" basedir=".">
+    <!-- Descripción del build -->
+    <description>
+        Genera la documentación Javadoc del proyecto.
+    </description>
+    
+    <!-- Definición de propiedades -->
+    <!-- Directorio fuente (ignoramos tests y otros archivos residuales) -->
+    <property name="src.dir" value="src/main/java"/>
+    <!-- Directorio destino para la documentación -->
+    <property name="doc.dir" value="doc"/>
+    
+    <!-- Target para limpiar la documentación previa -->
+    <target name="clean">
+        <!-- Elimina el directorio doc si existe -->
+        <delete dir="${doc.dir}"/>
+    </target>
+    
+    <!-- Target para generar la documentación Javadoc -->
+    <target name="javadoc" description="Genera la documentación Javadoc del proyecto" depends="clean">
+        <!-- Crea el directorio de documentación -->
+        <mkdir dir="${doc.dir}"/>
+        <!-- Task javadoc para generar la documentación -->
+        <javadoc sourcepath="${src.dir}" destdir="${doc.dir}" packagenames="es.ubu.lsi.*" charset="UTF-8" author="true" version="true">
+            <!-- Título del documento -->
+            <doctitle><![CDATA[Documentación Javadoc - Chat1.0]]></doctitle>
+            <!-- Pie de página -->
+            <bottom><![CDATA[Chat1.0 - Documentación Generada con ANT]]></bottom>
+        </javadoc>
+    </target>
+</project>

@@ -228,13 +228,13 @@ public class ChatClientImpl implements ChatClient {
 
             PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
 
-            if (messageToSend.toLowerCase().equals("logout") || messageToSend.toLowerCase().equals("shutdown")) {
+            if (messageToSend.equalsIgnoreCase("logout") || messageToSend.equalsIgnoreCase("shutdown")) {
                 messageToSend = messageToSend.toUpperCase();
 
                 output.println(messageToSend);
                 System.out.println(ChatClientImpl.YELLOW + "\r[*] " + timestamp + ChatClientImpl.GREEN + " " + this.username + ChatClientImpl.CYAN 
                                             + " envía el comando: " + ChatClientImpl.RESET + messageToSend);
-            }else if (!messageToSend.equals("") && !messageToSend.equals("\n")) {
+            }else if (!messageToSend.isEmpty() && !messageToSend.equals("\n")) {
             
                 output.println(messageToSend);
                 System.out.println(ChatClientImpl.YELLOW + "\r[*] " + timestamp + ChatClientImpl.GREEN + " " + this.username + ChatClientImpl.CYAN 
@@ -267,7 +267,7 @@ public class ChatClientImpl implements ChatClient {
      * @param args Argumentos de la línea de comandos.
      */
     public static void main(String[] args) {
-        if ((args.length < 3 || args.length > 3) && args.length != 0) {
+        if ((args.length != 3) && (args.length != 0)) {
             System.err.printf(ChatClientImpl.RED + "[!] Error en el formato de entrada.\n" + ChatClientImpl.RESET);
             System.out.println(ChatClientImpl.YELLOW + "[*] " + ChatClientImpl.CYAN 
                                     + "Uso: \"$java es.ubu.lsi.client.ChatClientImpl <servidor> <puerto> <usuario>\"\n" + ChatClientImpl.RESET);
