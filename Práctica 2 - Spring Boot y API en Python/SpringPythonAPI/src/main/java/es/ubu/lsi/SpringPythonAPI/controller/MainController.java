@@ -8,9 +8,9 @@ public class MainController {
 
     @GetMapping("/")
     public String paginaPrincipal() {
-        return "index";  // Thymeleaf: src/main/resources/templates/index.html
+        return "index";   // Thymeleaf: src/main/resources/templates/index.html
     }
-    
+
     @GetMapping("/login")
     public String pantallaLogin() {
         return "login";
