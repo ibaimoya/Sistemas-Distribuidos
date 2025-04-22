@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Se mueve a la carpeta del script
+# Se mueve a la carpeta
 cd "$(dirname "$0")"
 
 # Arranca Spring Boot con Maven en segundo plano

@@ -1,5 +1,5 @@
 @echo off
-:: Se mueve a la carpeta del script.
+:: Se mueve a la carpeta.
 cd /d %~dp0
 
 :: Inicia Spring Boot.
