@@ -29,6 +29,10 @@ mvn exec:java@cliente-pio
 mvn exec:java@cliente-blas
 ```
 
+****
+
+### Comandos:
+
 Una vez dentro del chat se puede vetar a otro usuario para que no aparezcan sus mensajes usando:
 ```
 ban <usuario>
