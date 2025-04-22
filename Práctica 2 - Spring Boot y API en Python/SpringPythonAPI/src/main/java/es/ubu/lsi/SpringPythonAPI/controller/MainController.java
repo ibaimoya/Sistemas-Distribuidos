@@ -10,6 +10,7 @@ public class MainController {
     public String paginaPrincipal() {
         return "index";  // Thymeleaf: src/main/resources/templates/index.html
     }
+    
     @GetMapping("/login")
     public String pantallaLogin() {
         return "login";
