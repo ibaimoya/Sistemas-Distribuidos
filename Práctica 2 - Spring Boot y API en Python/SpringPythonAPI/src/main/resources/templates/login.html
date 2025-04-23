@@ -46,7 +46,7 @@
                         <img th:src="@{/images/placeholder.png}" width="70" style="border-radius:50%;" alt="">
                     </a>
                 </div>
-                <h2 class="fw-bold text-center py-3">Ejemplo Login Básico</h2>      
+                <h2 class="fw-bold text-center py-3">Inicia Sesión</h2>      
 
                 <form id="formularioLogin" th:action="@{/login}" method="post">
                     
@@ -81,50 +81,8 @@
         </div>
     </div>
 
-    <script>
-        // Alterna el tipo de campo contraseña.
-        function mostrarContraseña(event) {
-            var inputPassword = document.getElementById("password");
-            var boton = event.currentTarget;
-            var icono = boton.querySelector("#icono");
-            var texto = boton.querySelector("#texto");
-
-            if (inputPassword.type === "password") {
-                inputPassword.type = "text";
-                icono.textContent = "🙈";
-                texto.textContent = "Ocultar";
-            } else {
-                inputPassword.type = "password";
-                icono.textContent = "👁";
-                texto.textContent = "Mostrar";
-            }
-        }
-
-        // Valida el formulario antes de enviarlo.
-        document.getElementById("formularioLogin").addEventListener("submit", function(event) {
-            var usuario = document.getElementById("usuario").value.trim();
-            var password = document.getElementById("password").value.trim();
-            var usuarioError = document.getElementById("usuarioError");
-            var passwordError = document.getElementById("passwordError");
-
-            usuarioError.textContent = "";
-            passwordError.textContent = "";
-
-            var valido = true;
-
-            if (usuario === "") {
-                usuarioError.textContent = "El usuario es obligatorio.";
-                valido = false;
-            }
-            if (password === "") {
-                passwordError.textContent = "La contraseña es obligatoria.";
-                valido = false;
-            }
-            if (!valido) {
-                event.preventDefault();
-            }
-        });
-    </script>
+    <script src="/js/showPassword.js"></script>
+    <script src="/js/validation.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
