@@ -19,7 +19,7 @@ Repositorio en el que se encuentran las prácticas de **Sistemas Distribuidos** 
 | Tomcat | 10.0.27 | [link](https://archive.apache.org/dist/tomcat/tomcat-10/v10.0.27/bin/#:~:text=apache%2Dtomcat%2D10.0.27%2Dwindows%2Dx64.zip%20%20%20%20%20%20%20%202022%2D10%2D03%2015%3A53%20%20%2013M) |
 | Glassfish Web Profile | 5.1.0 | [link](https://projects.eclipse.org/projects/ee4j.glassfish/downloads#:~:text=Eclipse%20GlassFish%205.1.0%2C%20Web%20Profile) |
 | Glassfish Web Profile | 5.1.0 | [link](https://projects.eclipse.org/projects/ee4j.glassfish/downloads#:~:text=Eclipse%20GlassFish%205.1.0%2C%20Web%20Profile) |
-| Docker Desktop | --- | [link](https://www.docker.com/products/docker-desktop/) |
+| Docker Desktop | 4.40.0+ | [link](https://www.docker.com/products/docker-desktop/) |
 
 > [!IMPORTANT]  
 > El JDK es prerrequisito para TODO el resto de productos, y por lo tanto debe ser el **primer producto** a instalar.
