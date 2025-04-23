@@ -8,49 +8,82 @@
 
   <style>
     /* ───── Estilos generales ───── */
-    body{
-      margin:0;min-height:100vh;
-      background:linear-gradient(to bottom,rgba(18,128,206,.864),rgba(9,126,198,.461));
-      color:#fff;display:flex;flex-direction:column;
+    body {
+      margin: 0; min-height: 100vh;
+      background: linear-gradient(to bottom, rgba(18,128,206,.864), rgba(9,126,198,.461));
+      color: #fff; display: flex; flex-direction: column;
     }
-    .barraTop{background:rgba(0,0,0,.35);backdrop-filter:blur(4px);}
-    .zonaLinks{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:1rem;text-align:center;}
-    .footer{position:absolute;bottom:0;width:100%;text-align:center;padding:.5rem 0;font-size:.8rem;color:rgba(255,255,255,.7);background:rgba(0,0,0,.15);}
+    .barraTop {
+      background: rgba(0,0,0,.35); backdrop-filter: blur(4px);
+    }
+    .zonaLinks {
+      flex: 1; display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      gap: 1rem; text-align: center;
+    }
+    .footer {
+      position: absolute; bottom: 0; width: 100%;
+      text-align: center; padding: .5rem 0;
+      font-size: .8rem; color: rgba(255,255,255,.7);
+      background: rgba(0,0,0,.15);
+    }
 
     /* ───── Entradas originales ───── */
-    @keyframes aparecerDesdeAbajo{from{transform:translateY(60px);opacity:0;}to{transform:translateY(0);opacity:1;}}
-    @keyframes entrarIzq{from{transform:translateX(-120%);opacity:0;}to{transform:translateX(0);opacity:1;}}
-    @keyframes entrarDer{from{transform:translateX(120%);opacity:0;}to{transform:translateX(0);opacity:1;}}
-    .animTitulo{opacity:0;animation:aparecerDesdeAbajo .8s ease-out .2s forwards;}
-    .animSub   {opacity:0;animation:aparecerDesdeAbajo .8s ease-out .3s forwards;}
-    .btnMenu   {min-width:10rem}
-    .animIzq   {opacity:0;animation:entrarIzq .7s ease-out forwards;}
-    .animDer   {opacity:0;animation:entrarDer .7s ease-out forwards;}
-    .btnMenu:nth-of-type(1){animation-delay:.1s;}
-    .btnMenu:nth-of-type(2){animation-delay:.3s;}
-    .btnMenu:nth-of-type(3){animation-delay:.5s;}
+    @keyframes aparecerDesdeAbajo {
+      from { transform: translateY(60px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+    @keyframes entrarIzq {
+      from { transform: translateX(-120%); opacity: 0; }
+      to   { transform: translateX(0);      opacity: 1; }
+    }
+    @keyframes entrarDer {
+      from { transform: translateX(120%);  opacity: 0; }
+      to   { transform: translateX(0);      opacity: 1; }
+    }
+    .animTitulo { opacity: 0; animation: aparecerDesdeAbajo .8s ease-out .2s forwards; }
+    .animSub    { opacity: 0; animation: aparecerDesdeAbajo .8s ease-out .3s forwards; }
+    .btnMenu    { min-width: 10rem; }
+    .animIzq    { opacity: 0; animation: entrarIzq .7s ease-out forwards; }
+    .animDer    { opacity: 0; animation: entrarDer .7s ease-out forwards; }
+    .btnMenu:nth-of-type(1) { animation-delay: .1s; }
+    .btnMenu:nth-of-type(2) { animation-delay: .3s; }
+    .btnMenu:nth-of-type(3) { animation-delay: .5s; }
 
     /* ───── Salidas direccionales ───── */
-    @keyframes outUp   {from{transform:translateY(0);opacity:1;}to{transform:translateY(-50px);opacity:0;}}
-    @keyframes outDown {from{transform:translateY(0);opacity:1;}to{transform:translateY(50px); opacity:0;}}
-    @keyframes outLeft {from{transform:translateX(0);opacity:1;}to{transform:translateX(-120%);opacity:0;}}
-    @keyframes outRight{from{transform:translateX(0);opacity:1;}to{transform:translateX(120%); opacity:0;}}
-
-    .outUp    {animation:outUp   .3s ease-in forwards;}
-    .outDown  {animation:outDown .3s ease-in forwards;}
-    .outLeft  {animation:outLeft .3s ease-in forwards;}
-    .outRight {animation:outRight.3s ease-in forwards;}
+    @keyframes outUp {
+      from { transform: translateY(0);    opacity: 1; }
+      to   { transform: translateY(-50px); opacity: 0; }
+    }
+    @keyframes outDown {
+      from { transform: translateY(0);    opacity: 1; }
+      to   { transform: translateY(50px);  opacity: 0; }
+    }
+    @keyframes outLeft {
+      from { transform: translateX(0);    opacity: 1; }
+      to   { transform: translateX(-120%); opacity: 0; }
+    }
+    @keyframes outRight {
+      from { transform: translateX(0);    opacity: 1; }
+      to   { transform: translateX(120%);  opacity: 0; }
+    }
+    .outUp    { animation: outUp   .3s ease-in forwards; }
+    .outDown  { animation: outDown .3s ease-in forwards; }
+    .outLeft  { animation: outLeft .3s ease-in forwards; }
+    .outRight { animation: outRight.3s ease-in forwards; }
 
     /* ───── Overlay blanco ───── */
-    #whiteOverlay{
-      position:fixed;top:0;left:0;width:100%;height:100%;
-      background:#fff;opacity:0;transition:opacity 2s ease-in-out;
-      pointer-events:none;z-index:1000;
+    #whiteOverlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: #fff; opacity: 1;
+      transition: opacity 2s ease-in-out;
+      pointer-events: none; z-index: 1000;
     }
   </style>
 </head>
 <body>
 
+  <!-- Overlay blanco para fade-in y fade-out -->
   <div id="whiteOverlay"></div>
 
   <header id="cabecera" class="barraTop py-2 px-4 d-flex justify-content-between align-items-center">
@@ -61,7 +94,6 @@
   <main id="principal" class="zonaLinks">
     <h1 id="titulo" class="fw-bold animTitulo">Sistema Spring Boot + API Flask</h1>
     <p id="sub" class="animSub">Selecciona una opción para comenzar.</p>
-
     <div class="d-flex flex-column flex-sm-row gap-3">
       <a id="btn1" th:href="@{/login}" class="btn btn-primary btnMenu animIzq linkLogin">Iniciar sesión</a>
       <a id="btn2" th:href="@{/register}" class="btn btn-outline-light btnMenu animDer">Registrarse</a>
@@ -74,32 +106,37 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    document.querySelector('.linkLogin').addEventListener('click', function (e) {
-      e.preventDefault();
 
-      /* Orden de salida con retardo escalonado */
-      const plan = [
-        {el: '#cabecera', cls: 'outUp',    delay:   0},
-        {el: '#pie',      cls: 'outDown',  delay:   0},
-        {el: '#titulo',   cls: 'outLeft',  delay:  0},
-        {el: '#sub',      cls: 'outRight', delay:  0},
-        {el: '#btn1',     cls: 'outLeft',  delay:  0},
-        {el: '#btn2',     cls: 'outRight', delay: 0},
-        {el: '#btn3',     cls: 'outLeft',  delay: 0},
-      ];
-      plan.forEach(({el, cls, delay}) => {
-          setTimeout(() => {
-           const node = document.querySelector(el);
-           node.classList.remove('animIzq', 'animDer');
-           node.classList.add(cls);
-  }, delay);      });
+	window.addEventListener('load', () => {
+    const overlay = document.getElementById('whiteOverlay');
+    setTimeout(() => overlay.style.opacity = '0', 100);   // blanco → transparente
+    setTimeout(() => overlay.style.display = 'none', 1500);
+  	});
 
-      /* Después de 900 ms iniciamos fade a blanco */
-      setTimeout(()=>document.getElementById('whiteOverlay').style.opacity='1', 300);
+  	document.querySelector('.linkLogin').addEventListener('click', function (e) {
+    e.preventDefault();
 
-      /* Redirigimos tras 1 800 ms */
-      setTimeout(()=>window.location.href=this.href, 1800);
+    ['#cabecera','#pie','#titulo','#sub','#btn1','#btn2','#btn3'].forEach((sel,i)=>{
+      const el = document.querySelector(sel);
+      el.classList.remove('animIzq','animDer');
+      el.classList.add(i%2 ? 'outRight' : 'outLeft');           // alterna L/R
+      if(i<2) el.classList.replace(i?'outLeft':'outRight', i?'outDown':'outUp'); // cabecera/pie
     });
+
+    const overlay = document.getElementById('whiteOverlay');
+    overlay.style.display = 'block';   // vuelve a ser visible
+    overlay.style.opacity = '0';       // punto de partida
+    void overlay.offsetWidth;          // ← fuerza reflow
+    overlay.style.opacity = '1';       // y ahora sí, transiciona a blanco
+
+    setTimeout(() => window.location.href = this.href, 1500);
+    });
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
   </script>
 </body>
 </html>
