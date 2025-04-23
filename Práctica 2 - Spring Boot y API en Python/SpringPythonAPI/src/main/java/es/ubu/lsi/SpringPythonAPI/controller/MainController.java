@@ -8,7 +8,12 @@ public class MainController {
 
     @GetMapping("/")
     public String paginaPrincipal() {
-        return "index";   // Thymeleaf: src/main/resources/templates/index.html
+        return "index";
+    }
+
+    @GetMapping("/register")
+    public String pantallaRegistro() {
+        return "register";
     }
 
     @GetMapping("/login")
