@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var valido = true;
 
         if (usuario === "") {
-            usuarioError.textContent = "El usuario es obligatorio.";
+            usuarioError.textContent = "El nombre de usuario es obligatorio";
             valido = false;
         }
         if (password === "") {

@@ -17,9 +17,9 @@ document.getElementById('formRegistro').addEventListener('submit', ev => {
       document.getElementById(id + 'Error').textContent = ''
     );
   
-    if (!u.value.trim()) { usuarioError.textContent = 'Obligatorio'; ok = false; }
-    if (!e.value.trim()) { emailError.textContent   = 'Obligatorio'; ok = false; }
-    if (!p.value.trim()) { passError.textContent    = 'Obligatorio'; ok = false; }
+    if (!u.value.trim()) { usuarioError.textContent = 'El nombre de usuario es obligatorio.'; ok = false; }
+    if (!e.value.trim()) { emailError.textContent   = 'El correo electrónico es obligatorio.'; ok = false; }
+    if (!p.value.trim()) { passError.textContent    = 'La contraseña es obligatoria.'; ok = false; }
     if (c.value !== p.value) { confirmError.textContent = 'No coincide'; ok = false; }
   
     if (!ok) ev.preventDefault();
