@@ -120,11 +120,11 @@
       const overlay = document.getElementById('whiteFade');
       const backBtn = document.getElementById('backBtn');
 
-      setTimeout(() => overlay.style.opacity = '0', 100);   // desvanece el blanco
+      setTimeout(() => overlay.style.opacity = '0', 100);
       setTimeout(() => {
-        overlay.style.display = 'none';                     // lo quita
-        backBtn.classList.add('backEnter');                 // **empieza la animación**
-      }, 600);
+        overlay.style.display = 'none';
+        backBtn.classList.add('backEnter');
+      }, 700);
     });
     const backBtn  = document.getElementById('backBtn');
     const loginBox = document.getElementById('loginBox');
@@ -137,8 +137,8 @@
       /* Reactivamos overlay y forzamos reflow antes de opacidad */
       whiteFade.style.display='block';
       whiteFade.style.opacity='0';
-      void whiteFade.offsetWidth;           // fuerza reflow
-      whiteFade.style.opacity='1';          // ahora sí, animación
+      void whiteFade.offsetWidth;
+      whiteFade.style.opacity='1';
 
       setTimeout(()=>window.location.href='/', 1200);
     });
