@@ -57,10 +57,20 @@
       animation: entrarIzq .7s ease-out forwards; 
     }
 
+    /* Animación para el título */
+    @keyframes fadeOutUp {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(-50px); }
+    }
+    
+    .fadeOutUp {
+      animation: fadeOutUp 0.5s ease-out forwards;
+    }
+
     /* Animaciones de búsqueda */
     @keyframes moveUp {
       from { transform: translateY(0); }
-      to { transform: translateY(-30vh); }
+      to { transform: translateY(-15vh); } /* Reducido aún más a -15vh */
     }
     
     .moveUp {
@@ -73,8 +83,9 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 60vh;
+      min-height: 40vh; /* Reducido a 40vh */
       transition: all 0.5s ease-out;
+      padding-top: 2rem;
     }
 
     /* Resultados */
@@ -83,12 +94,14 @@
       backdrop-filter: blur(10px);
       border-radius: 16px;
       padding: 2rem;
-      margin-top: 2rem;
+      margin-top: 0; /* Cambiado a 0 */
       max-width: 800px;
       width: 90%;
       opacity: 0;
       transform: translateY(20px);
       transition: opacity 0.5s ease, transform 0.5s ease;
+      position: relative;
+      top: -20px; /* Posicionado más arriba */
     }
     
     .pokemon-container.show {
@@ -142,7 +155,7 @@
     /* Botón volver */
     .btn-back {
       position: absolute;
-      top: 1rem;
+      top: 4rem; /* Cambiado de 1rem a 4rem para bajar el botón */
       left: 1rem;
       z-index: 10;
       background: rgba(0,0,0,.25);
@@ -190,6 +203,20 @@
       margin-top: 1rem;
       display: none;
     }
+
+    /* Ajuste para el input de búsqueda */
+    .search-input {
+      font-size: 1rem;
+      padding: 0.75rem 1rem;
+    }
+
+    /* Logo en la barra superior */
+    .header-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
   </style>
 </head>
 <body>
@@ -202,18 +229,21 @@
   </a>
 
   <!-- Barra superior -->
-  <header class="barraTop py-2 px-4 d-flex justify-content-between align-items-center animEntrada">
-    <h4 class="m-0">PokeAPI</h4>
-    <img th:src="@{/images/placeholder.png}" width="50" style="border-radius:50%;" alt="Logo">
+  <header class="barraTop py-2 px-4 d-flex justify-content-between align-items-center animEntrada" style="animation-delay:.1s;">
+    <div class="d-flex align-items-center">
+      <img th:src="@{/images/pokedex.png}" class="header-logo" alt="Logo">
+      <h4 class="m-0">PokeAPI</h4>
+    </div>
+    <span class="fw-bold" th:text="${usuarioActual}">Usuario</span>
   </header>
 
   <!-- Contenido principal -->
   <main class="flex-grow-1 d-flex flex-column align-items-center">
     <div id="searchContainer" class="search-container">
-      <h1 class="fw-bold text-center mb-4 animEntrada">Busca un Pokémon</h1>
+      <h1 id="searchTitle" class="fw-bold text-center mb-4 animEntrada">Busca un Pokémon</h1>
       
-      <div class="input-group mb-3 w-75 max-w-md animEntrada" style="max-width: 500px;">
-        <input type="text" id="pokemonSearch" class="form-control form-control-lg" 
+      <div class="input-group mb-3 animEntrada" style="max-width: 700px; width: 95%;"> <!-- Aumentado aún más el ancho -->
+        <input type="text" id="pokemonSearch" class="form-control form-control-lg search-input" 
                placeholder="Nombre o número del Pokémon" aria-label="Nombre del Pokémon">
         <button class="btn btn-light" type="button" id="searchButton">
           <i class="bi bi-search"></i>
@@ -274,6 +304,7 @@
       const searchInput = document.getElementById('pokemonSearch');
       const searchButton = document.getElementById('searchButton');
       const searchContainer = document.getElementById('searchContainer');
+      const searchTitle = document.getElementById('searchTitle');
       const pokemonContainer = document.getElementById('pokemonContainer');
       const loader = document.getElementById('loader');
       const errorMessage = document.getElementById('errorMessage');
@@ -289,6 +320,9 @@
       
       // Inicialmente ocultar el contenedor de Pokémon
       pokemonContainer.style.display = 'none';
+      
+      // Variable para controlar si es la primera búsqueda exitosa
+      let firstSuccessfulSearch = true;
       
       // Función para buscar Pokémon
       const searchPokemon = async () => {
@@ -308,6 +342,12 @@
           }
           
           const data = await response.json();
+          
+          // Animar el título solo en la primera búsqueda exitosa
+          if (firstSuccessfulSearch) {
+            searchTitle.classList.add('fadeOutUp');
+            firstSuccessfulSearch = false;
+          }
           
           // Mover la barra de búsqueda hacia arriba
           searchContainer.classList.add('moveUp');
@@ -397,6 +437,8 @@
         
         // Mostrar el contenedor
         pokemonContainer.style.display = 'block';
+        
+        // Asegurar que el contenedor sea visible en la pantalla
         setTimeout(() => {
           pokemonContainer.classList.add('show');
         }, 100);
