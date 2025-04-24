@@ -29,20 +29,10 @@
               color:#fff;font-size:1.6rem;transition:background .2s;}
 
     .btn-back:hover{background:rgba(0,0,0,.45);}
+
     #backBtn {
       opacity: 0;
-      animation: enterLeft 1s ease-in-out 0.5s forwards;
-    }
-
-    @keyframes enterLeft {
-      from {
-      transform: translateX(-80px);
-      opacity: 0;
-      }
-      to {
-      transform: translateX(0);
-      opacity: 1;
-      }
+      animation: enterUp 1s ease-in-out .5s forwards;
     }
     /* salida flecha */
     @keyframes outLeft{from{transform:translateX(0);opacity:1;}to{transform:translateX(-120%);opacity:0;}}

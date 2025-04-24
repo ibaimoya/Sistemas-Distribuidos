@@ -1,5 +1,7 @@
 package es.ubu.lsi.SpringPythonAPI.controller;
 
+import java.security.Principal;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,5 +29,13 @@ public class MainController {
     @GetMapping("/login")
     public String pantallaLogin() {
         return "login";
+    }
+
+    @GetMapping("/menu")
+    public String pantallaMenu(Model model, Principal principal) {
+        if (principal != null) {
+            model.addAttribute("usuarioActual", principal.getName());
+        }
+        return "menu";
     }
 }

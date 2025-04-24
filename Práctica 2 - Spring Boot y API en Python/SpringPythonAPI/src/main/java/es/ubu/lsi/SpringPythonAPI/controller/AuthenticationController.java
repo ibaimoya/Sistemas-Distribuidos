@@ -1,11 +1,19 @@
 package es.ubu.lsi.SpringPythonAPI.controller;
 
+import java.util.Collections;
+
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import es.ubu.lsi.SpringPythonAPI.form.RegistroForm;
@@ -75,6 +83,50 @@ public class AuthenticationController {
 
         attrs.addFlashAttribute("registerSuccess",
                 "Cuenta creada correctamente. Ahora puede iniciar sesión.");
+        return "redirect:/login";
+    }
+
+    /**
+     * Procesa el formulario de inicio de sesión.
+     * Valida credenciales y redirige según éxito o error.
+     *
+     * @param usuario  Nombre de usuario
+     * @param password Contraseña en texto plano
+     * @param attrs    Atributos de redirección
+     * @return Redirección a “/menu” si ok, o a “/login” con mensaje de error.
+     */
+    @PostMapping("/login")
+    public String procesarLogin(
+            @RequestParam("usuario") String usuario,
+            @RequestParam("password") String password,
+            RedirectAttributes attrs) {
+
+        if (authService.login(usuario, password)) {
+            // 1. Crea el token sin roles:
+            UsernamePasswordAuthenticationToken authToken =
+                new UsernamePasswordAuthenticationToken(
+                    usuario, 
+                    null, 
+                    Collections.emptyList()    // en lugar de List.of()
+                );
+
+            // 2. Coloca el token en el contexto de seguridad:
+            SecurityContextHolder.getContext().setAuthentication(authToken);
+
+            // 3. Guarda el contexto en la sesión para que persista:
+            HttpSession session = ((ServletRequestAttributes) RequestContextHolder
+                                    .currentRequestAttributes())
+                                    .getRequest()
+                                    .getSession(true);
+            session.setAttribute(
+                "SPRING_SECURITY_CONTEXT",
+                SecurityContextHolder.getContext()
+            );
+
+            return "redirect:/menu";
+        }
+
+        attrs.addFlashAttribute("loginError", "Credenciales incorrectas.");
         return "redirect:/login";
     }
 }
