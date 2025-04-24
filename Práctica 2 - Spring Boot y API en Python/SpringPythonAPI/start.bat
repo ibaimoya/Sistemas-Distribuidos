@@ -17,6 +17,10 @@ timeout /t 5 /nobreak >nul
 REM 4) Inicia Spring Boot en segundo plano
 echo Iniciando Spring Boot...
 start "" /B mvn clean spring-boot:run
+if %errorlevel% neq 0 (
+    echo Fallo al iniciar Spring Boot. Código de error %errorlevel%.
+    goto end
+)
 
 REM 5) Espera unos segundos para que la app esté arriba
 timeout /t 10 /nobreak >nul
@@ -24,4 +28,4 @@ timeout /t 10 /nobreak >nul
 REM 6) Abre el navegador en localhost:8080
 start "" "http://localhost:8080"
 
-pause
+:end
