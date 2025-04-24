@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>Error 404: Página no encontrada</title>
+</head>
+<body>
+  <h1>¡Ups! Algo salió mal.</h1>
+  <p th:text="${timestamp}">Fecha del error</p>
+  <p th:text="${status} + ' - ' + ${error}">Código y descripción</p>
+  <a href="/" >Volver al inicio</a>
+</body>
+</html>
