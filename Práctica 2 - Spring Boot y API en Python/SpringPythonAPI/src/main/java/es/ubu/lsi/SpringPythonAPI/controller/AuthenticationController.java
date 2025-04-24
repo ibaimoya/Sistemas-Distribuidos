@@ -102,18 +102,17 @@ public class AuthenticationController {
             RedirectAttributes attrs) {
 
         if (authService.login(usuario, password)) {
-            // 1. Crea el token sin roles:
+
             UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(
                     usuario, 
                     null, 
-                    Collections.emptyList()    // en lugar de List.of()
+                    Collections.emptyList()
                 );
 
-            // 2. Coloca el token en el contexto de seguridad:
             SecurityContextHolder.getContext().setAuthentication(authToken);
 
-            // 3. Guarda el contexto en la sesión para que persista:
+            /* Guarda el contexto en la sesión para que persista. */
             HttpSession session = ((ServletRequestAttributes) RequestContextHolder
                                     .currentRequestAttributes())
                                     .getRequest()
