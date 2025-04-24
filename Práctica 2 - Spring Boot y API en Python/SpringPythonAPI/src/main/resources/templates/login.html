@@ -29,6 +29,21 @@
               color:#fff;font-size:1.6rem;transition:background .2s;}
 
     .btn-back:hover{background:rgba(0,0,0,.45);}
+    #backBtn {
+      opacity: 0;
+      animation: enterLeft 1s ease-in-out 0.5s forwards;
+    }
+
+    @keyframes enterLeft {
+      from {
+      transform: translateX(-80px);
+      opacity: 0;
+      }
+      to {
+      transform: translateX(0);
+      opacity: 1;
+      }
+    }
     /* salida flecha */
     @keyframes outLeft{from{transform:translateX(0);opacity:1;}to{transform:translateX(-120%);opacity:0;}}
     .backExit{animation:outLeft .3s ease-in forwards;}
@@ -53,9 +68,9 @@
   <div id="whiteFade"></div>
 
   <!-- Botón volver -->
-  <button id="backBtn" class="btn-back fadeLink" title="Volver">
+  <a id="backBtn" class="btn-back fadeLink" href="/" title="Volver">
     <i class="bi bi-arrow-left-short"></i>
-  </button>
+  </a>
 
   <!-- Tarjeta Login -->
   <div id="loginBox" class="container w-75 rounded-4 shadow entrarLogin">
