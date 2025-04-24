@@ -1,7 +1,11 @@
 package es.ubu.lsi.SpringPythonAPI.controller;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+
+import es.ubu.lsi.SpringPythonAPI.form.RegistroForm;
+
 
 @Controller
 public class MainController {
@@ -12,7 +16,11 @@ public class MainController {
     }
 
     @GetMapping("/register")
-    public String pantallaRegistro() {
+    public String pantallaRegistro(Model model) {
+
+        if (!model.containsAttribute("registroForm")) {
+            model.addAttribute("registroForm", new RegistroForm());
+        }
         return "register";
     }
 

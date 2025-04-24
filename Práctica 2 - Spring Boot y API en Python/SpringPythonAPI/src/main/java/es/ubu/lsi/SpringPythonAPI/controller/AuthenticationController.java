@@ -1,12 +1,15 @@
 package es.ubu.lsi.SpringPythonAPI.controller;
 
+import javax.validation.Valid;
+
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import es.ubu.lsi.SpringPythonAPI.form.RegistroForm;
 import es.ubu.lsi.SpringPythonAPI.service.AuthService;
-
 /**
  * Controlador de autenticación y registro de usuarios.
  * Proporciona métodos para procesar el inicio de sesión y el registro de nuevos usuarios.
@@ -32,45 +35,44 @@ public class AuthenticationController {
     }
 
     /**
-     * Procesa el formulario de inicio de sesión.
+     * Procesa el formulario de registro de usuario.
+     * Valida los datos del formulario y registra al usuario si no hay errores.
      * 
-     * @param usuario Nombre de usuario
-     * @param password Contraseña
-     * @param attrs Atributos de redirección para mostrar mensajes de error
-     * @return Redirección a la página de inicio o de error
-     */
-    @PostMapping("/login")
-    public String procesarLogin(@RequestParam String usuario,
-                                @RequestParam String password,
-                                RedirectAttributes attrs) {
-
-        if (authService.login(usuario, password)) {
-            return "redirect:/";
-        }
-        attrs.addFlashAttribute("loginError", "Credenciales incorrectas.");
-        return "redirect:/login";
-    }
-
-    /**
-     * Procesa el formulario de registro de nuevos usuarios.
-     * 
-     * @param usuario Nombre de usuario
-     * @param email Email del usuario
-     * @param password Contraseña
-     * @param attrs Atributos de redirección para mostrar mensajes de error o éxito
-     * @return Redirección a la página de inicio o de error
+     * @param form Datos del formulario de registro
+     * @param errores Errores de validación
+     * @param attrs Atributos para redirección
+     * @return Vista de registro o redirección a la página de inicio de sesión
      */
     @PostMapping("/register")
-    public String procesarRegistro(@RequestParam String usuario,
-                                   @RequestParam String email,
-                                   @RequestParam String password,
-                                   RedirectAttributes attrs) {
+    public String procesarRegistro(
+            @Valid @ModelAttribute("registroForm") RegistroForm form,
+            BindingResult errores,
+            RedirectAttributes attrs) {
 
-        if (authService.existeUsuario(usuario, email)) {
+        // Verifica errores de anotaciones (@NotBlank, @Email)
+        if (errores.hasErrors()) {
+            // Permite que Thymeleaf muestre errores en el formulario
+            return "register";
+        }
+
+        // Valida que password y confirm coincidan
+        if (!form.getPassword().equals(form.getConfirm())) {
+            errores.rejectValue("confirm", "Match", "Las contraseñas no coinciden.");
+            return "register";
+        }
+
+        // Comprueba existencia de usuario o email
+        if (authService.existeUsuario(form.getUsuario(), form.getEmail())) {
             attrs.addFlashAttribute("registerError", "El usuario o el correo ya existe.");
             return "redirect:/register";
         }
-        authService.registrar(usuario, email, password);
+
+        // Registra y redirige a login con mensaje de éxito
+        authService.registrar(
+                form.getUsuario(),
+                form.getEmail(),
+                form.getPassword());
+
         attrs.addFlashAttribute("registerSuccess",
                 "Cuenta creada correctamente. Ahora puede iniciar sesión.");
         return "redirect:/login";
