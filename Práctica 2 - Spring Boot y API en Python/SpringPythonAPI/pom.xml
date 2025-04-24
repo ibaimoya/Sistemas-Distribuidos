@@ -41,18 +41,12 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
-        <!-- Control de excepciones (opcional) -->
+        <!-- Control de excepciones -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- Base de datos en memoria H2 (para pruebas) -->
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <scope>runtime</scope>
-        </dependency>
         <!-- Driver de PostgreSQL -->
         <dependency>
             <groupId>org.postgresql</groupId>
