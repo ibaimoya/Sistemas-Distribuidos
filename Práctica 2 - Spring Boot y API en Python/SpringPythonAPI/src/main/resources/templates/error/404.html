@@ -2,12 +2,364 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Error 404: Página no encontrada</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  
+  <style>
+    /* Fondo degradado */
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(to bottom, rgba(18,128,206,.864), rgba(9,126,198,.461));
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    /* Overlay blanco */
+    #whiteOverlay {
+      position: fixed;
+      inset: 0;
+      background: #fff;
+      opacity: 1;
+      transition: opacity 2s ease-in-out;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    /* Animaciones de entrada */
+    @keyframes aparecer {
+      from { transform: translateY(60px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes flotar {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-15px); }
+      100% { transform: translateY(0px); }
+    }
+
+    @keyframes mover {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-20px); }
+      75% { transform: translateX(20px); }
+      100% { transform: translateX(0); }
+    }
+
+    .animEntrada { 
+      opacity: 0; 
+      animation: aparecer .8s ease-out forwards; 
+    }
+
+    .flotar {
+      animation: flotar 4s ease-in-out infinite;
+    }
+
+    .mover {
+      animation: mover 5s ease-in-out infinite;
+    }
+
+    /* Animaciones de salida */
+    @keyframes salirArriba {
+      from { transform: translateY(0); opacity: 1; }
+      to { transform: translateY(-100vh); opacity: 0; }
+    }
+
+    @keyframes salirAbajo {
+      from { transform: translateY(0); opacity: 1; }
+      to { transform: translateY(100vh); opacity: 0; }
+    }
+
+    @keyframes salirIzquierda {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(-100vw); opacity: 0; }
+    }
+
+    @keyframes salirDerecha {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100vw); opacity: 0; }
+    }
+
+    .salirArriba { animation: salirArriba 0.8s ease-in forwards; }
+    .salirAbajo { animation: salirAbajo 0.8s ease-in forwards; }
+    .salirIzquierda { animation: salirIzquierda 0.8s ease-in forwards; }
+    .salirDerecha { animation: salirDerecha 0.8s ease-in forwards; }
+
+    /* Contenedor principal */
+    .error-container {
+      max-width: 600px;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      margin: 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Código de error */
+    .error-code {
+      font-size: 8rem;
+      font-weight: bold;
+      line-height: 1;
+      margin-bottom: 1rem;
+      text-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Botón de regreso */
+    .btn-home {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 2px solid white;
+      padding: 0.75rem 2rem;
+      font-weight: bold;
+      border-radius: 50px;
+      transition: all 0.3s ease;
+      margin-top: 2rem;
+    }
+
+    .btn-home:hover {
+      background: white;
+      color: rgba(18, 128, 206, 1);
+      transform: scale(1.05);
+    }
+
+    /* Elementos de fondo */
+    .map-marker {
+      position: absolute;
+      opacity: 0.2;
+      z-index: -1;
+    }
+
+    .marker-1 {
+      top: 20%;
+      left: 20%;
+      font-size: 6rem;
+    }
+
+    .marker-2 {
+      bottom: 20%;
+      right: 20%;
+      font-size: 5rem;
+    }
+
+    .marker-3 {
+      top: 60%;
+      left: 15%;
+      font-size: 4rem;
+    }
+
+    /* Brújula mejorada */
+    .compass-container {
+      position: relative;
+      width: 150px;
+      height: 150px;
+      margin: 2rem auto;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      padding: 15px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .compass {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 5rem;
+    }
+
+    .compass-needle {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 70px;
+      height: 6px;
+      background: linear-gradient(to right, #ff6b6b 50%, white 50%);
+      transform: translate(-50%, -50%);
+      transform-origin: center;
+      border-radius: 4px;
+      animation: rotate 8s cubic-bezier(0.4, 0.0, 0.2, 1) infinite;
+      z-index: 2;
+    }
+
+    @keyframes rotate {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      25% { transform: translate(-50%, -50%) rotate(90deg); }
+      50% { transform: translate(-50%, -50%) rotate(180deg); }
+      75% { transform: translate(-50%, -50%) rotate(270deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    .compass-needle::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      right: -8px;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-top: 8px solid transparent;
+      border-bottom: 8px solid transparent;
+      border-left: 16px solid white;
+    }
+
+    .compass-needle::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: -8px;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-top: 8px solid transparent;
+      border-bottom: 8px solid transparent;
+      border-right: 16px solid #ff6b6b;
+    }
+
+    .compass-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 3;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Puntos cardinales */
+    .cardinal-points {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+    }
+
+    .cardinal-point {
+      position: absolute;
+      font-size: 0.9rem;
+      font-weight: bold;
+    }
+
+    .north { top: 5px; left: 50%; transform: translateX(-50%); }
+    .east { right: 5px; top: 50%; transform: translateY(-50%); }
+    .south { bottom: 0; left: 50%; transform: translateX(-50%); }
+    .west { left: 5px; top: 50%; transform: translateY(-50%); }
+  </style>
 </head>
 <body>
-  <h1>¡Ups! Algo salió mal.</h1>
-  <p th:text="${timestamp}">Fecha del error</p>
-  <p th:text="${status} + ' - ' + ${error}">Código y descripción</p>
-  <a href="/" >Volver al inicio</a>
+  <!-- Overlay blanco -->
+  <div id="whiteOverlay"></div>
+  
+  <!-- Marcadores de mapa de fondo -->
+  <div class="map-marker marker-1 mover"><i class="bi bi-geo-alt-fill"></i></div>
+  <div class="map-marker marker-2 mover" style="animation-delay: 1s;"><i class="bi bi-geo-alt-fill"></i></div>
+  <div class="map-marker marker-3 mover" style="animation-delay: 2s;"><i class="bi bi-geo-alt-fill"></i></div>
+  
+  <!-- Contenedor de error -->
+  <div class="error-container animEntrada" style="animation-delay: 0.3s;">
+    <div class="error-code flotar">404</div>
+    <h1 class="mb-4 animEntrada" style="animation-delay: 0.5s;">¡Página no encontrada!</h1>
+    
+    <div class="mb-4 animEntrada" style="animation-delay: 0.7s;">
+      <p>Parece que te has perdido en el ciberespacio.</p>
+      <p>La página que buscas ha desaparecido misteriosamente o nunca existió.</p>
+      <p class="mb-0" th:if="${timestamp}" th:text="${#dates.format(timestamp, 'dd-MM-yyyy HH:mm:ss')}">Fecha del error</p>
+    </div>
+    
+    <div class="compass-container animEntrada" style="animation-delay: 0.9s;">
+      <div class="compass">
+        <i class="bi bi-compass"></i>
+        <div class="compass-needle"></div>
+        <div class="compass-center"></div>
+        <div class="cardinal-points">
+          <div class="cardinal-point north">N</div>
+          <div class="cardinal-point east">E</div>
+          <div class="cardinal-point south">S</div>
+          <div class="cardinal-point west">W</div>
+        </div>
+      </div>
+    </div>
+    
+    <a href="/" class="btn btn-home fadeLink animEntrada" style="animation-delay: 1.1s;">
+      Volver al inicio
+    </a>
+  </div>
+  
+  <!-- Scripts -->
+  <script>
+    // Fade-in
+    window.addEventListener('load', () => {
+      const overlay = document.getElementById('whiteOverlay');
+      setTimeout(() => overlay.style.opacity = '0', 100);
+      setTimeout(() => overlay.style.display = 'none', 2100);
+    });
+
+    // Animación de salida para elementos
+    document.querySelectorAll('.fadeLink').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Detener animaciones actuales
+        document.querySelectorAll('.flotar, .girar, .mover').forEach(el => {
+          el.style.animation = 'none';
+        });
+        
+        // Detener animación de la brújula
+        document.querySelector('.compass-needle').style.animation = 'none';
+        
+        // Animar salida de elementos en diferentes direcciones
+        const errorCode = document.querySelector('.error-code');
+        const title = document.querySelector('h1');
+        const message = document.querySelector('.mb-4:not(h1)');
+        const compass = document.querySelector('.compass-container');
+        const button = document.querySelector('.btn-home');
+        const markers = document.querySelectorAll('.map-marker');
+        
+        // Forzar reflow antes de aplicar nuevas animaciones
+        void document.body.offsetWidth;
+        
+        // Aplicar animaciones con diferentes retrasos
+        errorCode.classList.add('salirArriba');
+        title.classList.add('salirIzquierda');
+        title.style.animationDelay = '0.05s';
+        message.classList.add('salirDerecha');
+        message.style.animationDelay = '0.1s';
+        compass.classList.add('salirAbajo');
+        compass.style.animationDelay = '0.15s';
+        button.classList.add('salirAbajo');
+        button.style.animationDelay = '0.2s';
+        
+        // Animar marcadores
+        markers.forEach((marker, index) => {
+          const directions = ['salirIzquierda', 'salirDerecha', 'salirArriba'];
+          marker.classList.add(directions[index % directions.length]);
+          marker.style.animationDelay = `${0.1 * index}s`;
+        });
+        
+        // Mostrar overlay blanco
+        const overlay = document.getElementById('whiteOverlay');
+        overlay.style.display = 'block';
+        overlay.style.opacity = '0';
+        void overlay.offsetWidth; // Forzar reflow
+        overlay.style.opacity = '1';
+        
+        // Navegar después de las animaciones
+        setTimeout(() => window.location.href = this.href, 1500);
+      });
+    });
+  </script>
 </body>
 </html>
