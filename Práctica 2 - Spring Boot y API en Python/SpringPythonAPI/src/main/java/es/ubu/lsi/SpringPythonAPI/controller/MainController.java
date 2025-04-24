@@ -60,4 +60,9 @@ public class MainController {
         }
         return "menu";
     }
+
+    @GetMapping("/pokeAPI")
+    public String pantallaPokeAPI() {
+        return "pokeAPI";
+    }
 }
