@@ -7,17 +7,25 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <style>
-    /* Fondo y tipografía */
-    body{margin:0;min-height:100vh;background:linear-gradient(to bottom,rgba(18,128,206,.864),rgba(9,126,198,.461));color:#fff;display:flex;flex-direction:column;}
+    /* Barra superior semitransparente. */
+    .barraTop{background:rgba(0,0,0,.35);backdrop-filter:blur(4px);}
 
-    /* Overlay blanco inicial */
-    #whiteOverlay{position:fixed;inset:0;background:#fff;opacity:1;transition:opacity 2s ease-in-out;pointer-events:none;z-index:1000;}
+    /* Fondo y disposición. */
+    body{margin:0;min-height:100vh;
+         background:linear-gradient(to bottom,rgba(18,128,206,.864),rgba(9,126,198,.461));
+         color:#fff;display:flex;flex-direction:column;}
 
-    /* Animaciones de entrada */
-    @keyframes aparecer{from{transform:translateY(60px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+    /* Overlay blanco inicial. */
+    #whiteOverlay{position:fixed;inset:0;background:#fff;
+                  opacity:1;transition:opacity 2s ease-in-out;
+                  pointer-events:none;z-index:1000;}
+
+    /* Animación de entrada. */
+    @keyframes aparecer{from{transform:translateY(60px);opacity:0;}
+                       to{transform:translateY(0);opacity:1;}}
     .animEntrada{opacity:0;animation:aparecer .8s ease-out .2s forwards;}
 
-    /* Círculo clickable */
+    /* Botón circular. */
     .circleBtn{
       width:160px;height:160px;border:4px solid #fff;border-radius:50%;
       display:flex;align-items:center;justify-content:center;
@@ -29,26 +37,32 @@
 </head>
 <body>
 
-  <!-- Overlay -->
+  <!-- Overlay blanco inicial. -->
   <div id="whiteOverlay"></div>
 
-  <!-- Contenido principal -->
+  <!-- Barra con nombre de usuario. -->
+  <header id="cabecera"
+          class="barraTop py-2 px-4 d-flex justify-content-end align-items-center animEntrada"
+          style="animation-delay:.1s;">
+    <span class="fw-bold" th:text="${usuarioActual}">Usuario</span>
+  </header>
+
+  <!-- Contenido central. -->
   <main class="flex-fill d-flex flex-column justify-content-center align-items-center gap-4 text-center">
     <h1 class="fw-bold animEntrada">Selecciona una opción</h1>
-
-    <!-- Botón circular -->
-    <a href="https://pokeapi.co" target="_blank" class="circleBtn animEntrada" style="animation-delay:.4s;">PokeApi</a>
+    <a href="https://pokeapi.co" target="_blank"
+       class="circleBtn animEntrada" style="animation-delay:.4s;">
+      PokeApi
+    </a>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-  <!-- Desvanece el overlay al cargar -->
   <script>
-    // Hace desaparecer la capa blanca al terminar la carga.
+    // Hace desaparecer el overlay al terminar la carga.
     window.addEventListener('load',()=>{
-      const overlay=document.getElementById('whiteOverlay');
-      setTimeout(()=>overlay.style.opacity='0',100);
-      setTimeout(()=>overlay.style.display='none',2100);
+      const overlay = document.getElementById('whiteOverlay');
+      setTimeout(()=>overlay.style.opacity='0', 100);
+      setTimeout(()=>overlay.style.display='none', 2100);
     });
   </script>
 </body>
