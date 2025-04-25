@@ -15,6 +15,8 @@ def get_pokemon(name_or_id: str):
         return jsonify(r.json())
     except requests.exceptions.HTTPError:
         abort(404, "Pokémon no encontrado.")
+    except requests.exceptions.Timeout:
+        abort(504, "Tiempo de espera agotado.")
     except Exception:
         abort(500, "Error al contactar con PokeAPI.")
 
