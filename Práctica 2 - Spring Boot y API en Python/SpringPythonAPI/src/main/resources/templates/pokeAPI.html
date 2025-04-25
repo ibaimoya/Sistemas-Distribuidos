@@ -335,7 +335,7 @@
         errorMessage.style.display = 'none';
         
         try {
-          const response = await fetch(`/api/pokemon/${pokemonNameOrId}`);
+          const response = await fetch(`http://localhost:5000/api/pokemon/${pokemonNameOrId}`);
           
           if (!response.ok) {
             throw new Error('Pokémon no encontrado');
