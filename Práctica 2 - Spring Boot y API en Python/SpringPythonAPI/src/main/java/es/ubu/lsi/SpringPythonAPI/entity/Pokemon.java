@@ -18,10 +18,10 @@ public class Pokemon {
     @Column(nullable = false)
     private String nombre;
 
-    @Column(name = "numero")
+    @Column(name = "numero", nullable = true)
     private Integer numero;
 
-    @Column(name = "imagen_url")
+    @Column(name = "imagen_url", length = 255, nullable = true)
     private String imagenUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -229,27 +229,28 @@
 
       /* guarda el Pokémon actual */
       saveBtn.addEventListener('click', async () => {
-        const nombre    = saveBtn.dataset.pokemon;
-        const numero    = parseInt(saveBtn.dataset.numero, 10);
-        const imagenUrl = saveBtn.dataset.imagenUrl;
+        const { nombre, numero, imagen } = saveBtn.dataset;
+        if (!nombre) return;
+
         try {
           const res = await fetch('/api/pokemon', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
+            method : 'POST',
+            headers: { 'Content-Type':'application/json' },
+            body   : JSON.stringify({
               nombre,
-              numero,
-              imagenUrl
+              numero : Number(numero),
+              imagenUrl: imagen
             })
           });
+
           if (res.ok) {
             alert('Pokémon guardado ✔');
           } else {
             alert('No se pudo guardar: ' + (await res.text()));
           }
         } catch (e) {
-          alert('Error al guardar');
           console.error(e);
+          alert('Error al guardar');
         }
       });
 
@@ -310,9 +311,9 @@
         setTimeout(()=>pokemonContainer.classList.add('show'),100);
 
         /* activar botón guardar */
-        saveBtn.dataset.pokemon   = poke.name;
-        saveBtn.dataset.numero    = poke.id;
-        saveBtn.dataset.imagenUrl = art;
+        saveBtn.dataset.nombre  = poke.name; 
+        saveBtn.dataset.numero = poke.id;
+        saveBtn.dataset.imagen = art;
         saveBtn.style.display     = 'inline-flex';      
       }
 

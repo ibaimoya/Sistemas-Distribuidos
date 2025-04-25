@@ -10,7 +10,7 @@ import es.ubu.lsi.SpringPythonAPI.entity.Pokemon;
 import es.ubu.lsi.SpringPythonAPI.service.PokemonService;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/pokemon")
 public class PokemonController {
 
     private final PokemonService servicio;
@@ -42,12 +42,11 @@ public class PokemonController {
     /* ----------  GUARDAR  ---------- */
     @PostMapping                 // POST /api/pokemon
     public ResponseEntity<Void> save(@RequestBody PokemonDTO dto,
-                                    Principal principal){
-        servicio.guardar(
-            principal.getName(),
-            dto.getNombre(),
-            dto.getNumero(),
-            dto.getImagenUrl());
+                                     Principal principal){
+        servicio.guardar(principal.getName(),
+                         dto.getNombre(),
+                         dto.getNumero(),
+                         dto.getImagenUrl());
         return ResponseEntity.ok().build();
     }
 
@@ -63,6 +62,6 @@ public class PokemonController {
         @PathVariable Long id,
         Principal principal) {
         servicio.borrar(id, principal.getName());
-    return ResponseEntity.ok().build();
-}
+        return ResponseEntity.ok().build();
+    }
 }
