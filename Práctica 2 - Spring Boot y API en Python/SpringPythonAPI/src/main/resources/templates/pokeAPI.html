@@ -1,5 +1,6 @@
+
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -64,11 +65,50 @@
 
     /* botón guardar */
     #savePokemonBtn{
-      position:absolute;
-      bottom:16px;
-      right:20px;
-      z-index:5;
-      display:none;               /* se muestra al cargar un Pokémon */
+      position: absolute;
+      left: 21.8%;
+      transform: translateX(-50%);
+      bottom: 120px;
+      z-index: 5;
+      display: none;
+      background: linear-gradient(to bottom, #ee1515 0%, #ee1515 50%, #fff 50%, #fff 100%);
+      border: 5px solid #333;
+      border-radius: 50px;
+      color: #333;
+      font-weight: bold;
+      padding: 8px 20px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    #savePokemonBtn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 20px;
+      height: 20px;
+      background-color: #fff;
+      border: 3px solid #333;
+      border-radius: 50%;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    #savePokemonBtn:hover {
+      transform: translateX(-50%) scale(1.05);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+    }
+    
+    #savePokemonBtn:active::before {
+      opacity: 1;
+    }
+    
+    #savePokemonBtn i {
+      margin-right: 8px;
+      font-size: 1.1rem;
     }
 
     /* -------- sugerencias -------- */
@@ -96,10 +136,10 @@
   <!-- Barra superior -->
   <header class="barraTop py-2 px-4 d-flex justify-content-between align-items-center animEntrada" style="animation-delay:.1s;">
     <div class="d-flex align-items-center">
-      <img th:src="@{/images/pokedex.png}" class="header-logo" alt="Logo">
+      <img src="/images/pokedex.png" class="header-logo" alt="Logo">
       <h4 class="m-0">PokeAPI</h4>
     </div>
-    <span class="fw-bold" th:text="${usuarioActual}">Usuario</span>
+    <span class="fw-bold">ibai</span>
   </header>
 
   <!-- Contenido -->
@@ -137,9 +177,9 @@
         </div>
       </div>
 
-      <!-- nuevo botón Guardar -->
-      <button id="savePokemonBtn" class="btn btn-success">
-        <i class="bi bi-heart-fill me-1"></i>Guardar Pokémon
+      <!-- Botón Guardar -->
+      <button id="savePokemonBtn" class="btn">
+        <i class="bi bi-plus-circle-fill"></i>Capturar Pokémon
       </button>
     </div>
   </main>
