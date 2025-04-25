@@ -36,9 +36,13 @@ public class PokemonService {
     }
 
     @Transactional
-    public void borrar(Long id, String usuario){
+    public boolean borrar(Long id, String usuario){
         // Solo deja borrar si pertenece al usuario
-        repo.findByIdAndUsuario_Nombre(id, usuario)
-            .ifPresent(repo::delete);
+        return repo.findByIdAndUsuario_Nombre(id, usuario)
+            .map(pokemon -> {
+                repo.delete(pokemon);
+                return true;
+            })
+            .orElse(false);
     }
 }

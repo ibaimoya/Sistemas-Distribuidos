@@ -57,11 +57,10 @@ public class PokemonController {
     }
 
     /* ----------  BORRAR  ---------- */
-    @DeleteMapping("/pokemon/{id}")
-    public ResponseEntity<Void> delete(
-        @PathVariable Long id,
-        Principal principal) {
-        servicio.borrar(id, principal.getName());
-        return ResponseEntity.ok().build();
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id, Principal p) {
+        return servicio.borrar(id, p.getName())
+               ? ResponseEntity.noContent().build()
+               : ResponseEntity.notFound().build();
     }
 }

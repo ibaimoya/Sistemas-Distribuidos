@@ -119,7 +119,7 @@
       transition: all 0.3s ease;
       height: 100%;
       border: none;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
     }
 
     .pokemon-card:hover {
@@ -186,7 +186,17 @@
     .pokemon-card:nth-child(7) { animation-delay: 0.9s; }
     .pokemon-card:nth-child(8) { animation-delay: 1.0s; }
     .pokemon-card:nth-child(n+9) { animation-delay: 1.1s; }
-  </style>
+
+    /* Botón de borrado */
+    .pokemon-card .delete-btn {
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    .pokemon-card:hover .delete-btn {
+        opacity: 1;
+    }
+</style>
 </head>
 <body>
   <!-- Overlay blanco para transiciones -->
@@ -212,8 +222,14 @@
 
     <!-- Contenedor de Pokémon -->
     <div class="row g-4" th:if="${pokemons != null && !pokemons.isEmpty()}">
-      <div class="col-6 col-md-4 col-lg-3 mb-4" th:each="p : ${pokemons}">
-        <div class="pokemon-card position-relative" th:data-id="${p.id}">
+      <!-- Columna ajustada a col-12 en xs -->
+      <div class="col-12 col-sm-6 col-md-6 col-lg-5 mb-4" th:each="p : ${pokemons}">
+        <div class="pokemon-card position-relative animEntrada" th:data-id="${p.id}" style="animation-delay: 0.3s;">
+          <!-- Botón borrar -->
+          <button class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 delete-btn" style="font-size: 0.8rem; padding: 0.2rem 0.3rem;">
+            <i class="bi bi-trash"></i>
+          </button>
+
           <div class="card-img-container">
             <img th:src="${p.imagenUrl}" class="img-fluid" th:alt="${p.nombre}">
           </div>
@@ -244,31 +260,44 @@
       setTimeout(() => overlay.style.display = 'none', 2100);
     });
 
-    // Animación de salida para enlaces
+    // Fade-out enlaces con animación
     document.querySelectorAll('.fadeLink').forEach(link => {
       link.addEventListener('click', function(e) {
         e.preventDefault();
-        
-        // Animar salida de elementos
         document.querySelector('.btn-back').classList.add('salirIzquierda');
         document.querySelector('header').classList.add('salirArriba');
         document.querySelector('h1').classList.add('salirArriba');
-        
-        // Animar salida de tarjetas
-        document.querySelectorAll('.pokemon-card, .no-pokemon').forEach((card, index) => {
+        document.querySelectorAll('.pokemon-card, .no-pokemon').forEach((card, i) => {
           card.classList.add('salirAbajo');
-          card.style.animationDelay = `${0.1 * index}s`;
+          card.style.animationDelay = `${0.1 * i}s`;
         });
-        
-        // Mostrar overlay blanco
         const overlay = document.getElementById('whiteOverlay');
         overlay.style.display = 'block';
         overlay.style.opacity = '0';
-        void overlay.offsetWidth; // Forzar reflow
+        void overlay.offsetWidth;
         overlay.style.opacity = '1';
-        
-        // Navegar después de las animaciones
         setTimeout(() => window.location.href = this.href, 1500);
+      });
+    });
+
+    // Borrar Pokémon
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', async e => {
+        e.stopPropagation();
+        const card = btn.closest('.pokemon-card');
+        const id   = card.dataset.id;
+        if (!confirm('¿Seguro que quieres borrar este Pokémon?')) return;
+        try {
+          const res = await fetch(`/api/pokemon/${id}`, { method: 'DELETE' });
+          if (res.ok) {
+            window.location.reload();
+          } else {
+            alert('No se pudo borrar: ' + await res.text());
+          }
+        } catch (err) {
+          console.error(err);
+          alert('Error al borrar');
+        }
       });
     });
   </script>
