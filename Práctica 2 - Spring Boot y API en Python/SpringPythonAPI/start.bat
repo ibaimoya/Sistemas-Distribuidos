@@ -10,6 +10,9 @@ REM 2) Levanta la base de datos con docker-compose
 echo Levantando PostgreSQL en Docker...
 docker-compose up -d db
 
+echo Levantando Flask en Docker...
+docker-compose up -d flask
+
 REM 3) Espera un momento para que Postgres arranque (ajusta si es necesario)
 echo Esperando a PostgreSQL...
 timeout /t 5 /nobreak >nul

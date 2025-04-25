@@ -62,7 +62,8 @@ public class MainController {
     }
 
     @GetMapping("/pokeAPI")
-    public String pantallaPokeAPI() {
+    public String pantallaPokeAPI(Model model, Principal principal){
+        model.addAttribute("usuarioActual", principal.getName());
         return "pokeAPI";
     }
 }

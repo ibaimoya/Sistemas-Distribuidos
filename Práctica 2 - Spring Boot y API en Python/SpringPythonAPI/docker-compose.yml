@@ -8,17 +8,21 @@ services:
       POSTGRES_DB: midb
     ports:
       - "5432:5432"
+  api:
+    build: ./flask-api
+    ports: ["5000:5000"]
+    restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U miusuario"]
-      interval: 5s     # ← intervalo entre comprobaciones
-      timeout: 5s      # ← cuánto espera cada comprobación
-      retries: 5       # ← intentos antes de marcar KO
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/pokemon/pikachu"]
+      interval: 60s
+      timeout: 3s
+      retries: 5
   app:
     build: 
       context: .
       dockerfile: Dockerfile
     depends_on:
-      db:
-        condition: service_healthy
+      - db
+      - api
     ports:
       - "8080:8080"
