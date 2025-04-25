@@ -12,13 +12,12 @@ import es.ubu.lsi.SpringPythonAPI.form.RegistroForm;
 @Controller
 public class MainController {
 
-    Principal principal = null;
 
     @GetMapping("/")
-    public String paginaPrincipal() {
+    public String paginaPrincipal(Principal principal) {
 
         /* Impide volver a zonas para logearse / registrarse. */
-        if (this.principal != null) {
+        if (principal != null) {
             return "redirect:/menu";
         }
 
@@ -26,10 +25,10 @@ public class MainController {
     }
 
     @GetMapping("/register")
-    public String pantallaRegistro(Model model) {
+    public String pantallaRegistro(Model model, Principal principal) {
 
         /* Impide volver a la zona para registrarse. */
-        if (this.principal != null) {
+        if (principal != null) {
             return "redirect:/menu";
         }        
 
@@ -40,10 +39,10 @@ public class MainController {
     }
 
     @GetMapping("/login")
-    public String pantallaLogin() {
+    public String pantallaLogin(Principal principal) {
 
         /* Impide volver a la zona para logearse. */
-        if (this.principal != null) {
+        if (principal != null) {
             return "redirect:/menu";
         }
 
@@ -53,9 +52,6 @@ public class MainController {
     @GetMapping("/menu")
     public String pantallaMenu(Model model, Principal principal) {
         if (principal != null) {
-
-            this.principal = principal;
-
             model.addAttribute("usuarioActual", principal.getName());
         }
         return "menu";
