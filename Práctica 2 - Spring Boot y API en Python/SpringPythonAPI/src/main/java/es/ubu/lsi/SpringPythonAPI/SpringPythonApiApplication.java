@@ -33,7 +33,7 @@ public class SpringPythonApiApplication {
     CommandLineRunner init(AuthService auth) {
         return args -> {
             if (!auth.existeUsuario("admin", "admin@admin.com")) {
-                auth.registrar("admin", "admin@admin.com", "1234");
+                auth.registrar("admin", "admin@admin.com", "admin");
             }
         };
     }
