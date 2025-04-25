@@ -39,21 +39,30 @@ public class PokemonController {
 
     /* ---------- ENDPOINTS ---------- */
 
-    /** Guarda un Pokémon para el usuario logeado. */
-    @PostMapping("/pokemon")
+    /* ----------  GUARDAR  ---------- */
+    @PostMapping                 // POST /api/pokemon
     public ResponseEntity<Void> save(@RequestBody PokemonDTO dto,
-                                     Principal principal) {
-
-        servicio.guardar(principal.getName(),
-                         dto.getNombre(),
-                         dto.getNumero(),
-                         dto.getImagenUrl());
+                                    Principal principal){
+        servicio.guardar(
+            principal.getName(),
+            dto.getNombre(),
+            dto.getNumero(),
+            dto.getImagenUrl());
         return ResponseEntity.ok().build();
     }
 
-    /** Devuelve los Pokémon guardados del usuario. */
-    @GetMapping("/pokemon")
-    public List<Pokemon> list(Principal principal) {
+    /* ----------  LISTAR  ---------- */
+    @GetMapping                  // GET /api/pokemon
+    public List<Pokemon> list(Principal principal){
         return servicio.listar(principal.getName());
     }
+
+    /* ----------  BORRAR  ---------- */
+    @DeleteMapping("/pokemon/{id}")
+    public ResponseEntity<Void> delete(
+        @PathVariable Long id,
+        Principal principal) {
+        servicio.borrar(id, principal.getName());
+    return ResponseEntity.ok().build();
+}
 }

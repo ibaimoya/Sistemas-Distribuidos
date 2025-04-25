@@ -2,6 +2,7 @@ package es.ubu.lsi.SpringPythonAPI.service;
 
 import java.util.List;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import es.ubu.lsi.SpringPythonAPI.entity.Pokemon;
 import es.ubu.lsi.SpringPythonAPI.entity.Usuario;
 import es.ubu.lsi.SpringPythonAPI.repository.PokemonRepository;
@@ -32,5 +33,12 @@ public class PokemonService {
 
     public List<Pokemon> listar(String usuarioNombre) {
         return repo.findByUsuario_Nombre(usuarioNombre);
+    }
+
+    @Transactional
+    public void borrar(Long id, String usuario){
+        // Solo deja borrar si pertenece al usuario
+        repo.findByIdAndUsuario_Nombre(id, usuario)
+            .ifPresent(repo::delete);
     }
 }
