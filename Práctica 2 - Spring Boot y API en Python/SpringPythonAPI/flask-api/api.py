@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, abort, request
 from flask_cors import CORS
 import requests
-from errors import AppError, NotFoundError, TimeoutError, ExternalAPIError
+from errors import AppError, NotFoundError, TimeoutError, ExternalAPIError, FileNotFoundErrorApp, FileReadErrorApp
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -18,7 +18,6 @@ def handle_unexpected(exc: Exception):
     """Todo lo demás (bugs, errores inesperados) cae aquí y devuelve un 500 genérico."""
     generic = AppError("Error interno del servidor.")
     return handle_app_error(generic)
-
 
 POKE_URL = "https://pokeapi.co/api/v2/pokemon/{}"
 POKE_LIST_URL = "https://pokeapi.co/api/v2/pokemon"
@@ -56,6 +55,50 @@ def get_pokemon_list():
         raise TimeoutError()
     except Exception:
         raise ExternalAPIError()
+
+
+@app.errorhandler(404)
+def handle_404(e):
+    return jsonify(error=str(e)), 404
+
+@app.errorhandler(504)
+def handle_504(e):
+    return jsonify(error=str(e)), 504
+
+@app.errorhandler(500)
+def handle_500(e):
+
+    return jsonify(error=str(e)), 500
+
+# Simulaciones de errores para pruebas. #
+
+@app.route("/api/test/timeout")
+def test_timeout():
+    # Simula un timeout directamente
+    abort(504, "Tiempo de espera agotado.")
+
+@app.route("/api/test/error")
+def test_error():
+    # Lanza una excepción no manejada para probar el 500
+    raise RuntimeError("Error interno simulado")
+
+
+@app.route("/api/test/file")
+def test_file():
+    path = request.args.get("path")
+    if not path:
+        # ahora no hace falta pasar status_code
+        raise AppError("Falta el parámetro 'path'.", status_code=400)
+
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            contenido = f.read()
+        return jsonify({"content": contenido})
+    except FileNotFoundError:
+        raise FileNotFoundErrorApp(path)
+    except PermissionError:
+        raise FileReadErrorApp(path)
+    
 
 
 if __name__ == "__main__":

@@ -1,0 +1,51 @@
+{
+	"info": {
+		"_postman_id": "bb918cb3-06b4-49f6-8212-4552470b5024",
+		"name": "Excepciones",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "44436368",
+		"_collection_link": "https://ibai-754075.postman.co/workspace/Ibai's-Workspace~04272eea-e1d0-4312-801c-8654098aa77e/collection/44436368-bb918cb3-06b4-49f6-8212-4552470b5024?action=share&source=collection_link&creator=44436368"
+	},
+	"item": [
+		{
+			"name": "OK",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Pokémon no encontrado: 404",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Tiempo de espera agotado: 504",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Error interno del servidor: 500",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Fichero no encontrado: 400",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}
