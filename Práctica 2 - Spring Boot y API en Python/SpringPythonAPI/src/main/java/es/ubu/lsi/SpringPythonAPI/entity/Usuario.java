@@ -53,11 +53,11 @@ public class Usuario {
     }
 
     /* Getters y setters. */
-    public Long getId()                { return id; }
-    public String getNombre()          { return nombre; }
-    public void   setNombre(String n)  { this.nombre = n; }
-    public String getEmail()           { return email; }
-    public void   setEmail(String e)   { this.email = e; }
-    public String getPasswordHash()    { return passwordHash; }
+    public Long getId()                     { return id; }
+    public String getNombre()               { return nombre; }
+    public void   setNombre(String n)       { this.nombre = n; }
+    public String getEmail()                { return email; }
+    public void   setEmail(String e)        { this.email = e; }
+    public String getPasswordHash()         { return passwordHash; }
     public void   setPasswordHash(String h) { this.passwordHash = h; }
 }
