@@ -18,6 +18,7 @@ public class MisPokemonsController {
     @GetMapping("/mis-pokemons")
     public String lista(Model model, Principal principal) {
         model.addAttribute("pokemons", servicio.listar(principal.getName()));
+        model.addAttribute("usuarioActual", principal.getName());
         return "misPokemons";
     }
 }
