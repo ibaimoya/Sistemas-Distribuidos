@@ -139,11 +139,19 @@
 
   <!-- Mostrar / ocultar contraseña -->
   <script>
-    function togglePass(e,id){
-      const input=document.getElementById(id);
-      input.type = input.type==='password' ? 'text' : 'password';
-      e.currentTarget.firstChild.textContent =
-        input.type==='password' ? '👁 Mostrar' : '🙈 Ocultar';
+    function togglePass(ev, id) {
+
+      var input = document.getElementById(id);
+
+        var textoBoton = ev.currentTarget.querySelector('span');
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            textoBoton.textContent = '🙈 Ocultar';
+        } else {
+            input.type = 'password';
+            textoBoton.textContent = '👁 Mostrar';
+        }
     }
   </script>
 

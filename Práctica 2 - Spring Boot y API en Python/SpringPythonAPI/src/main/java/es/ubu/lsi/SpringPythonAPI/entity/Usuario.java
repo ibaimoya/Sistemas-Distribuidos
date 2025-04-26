@@ -5,7 +5,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.validation.constraints.Pattern;
 
 /**
  * Clase que representa a un usuario en la base de datos.
@@ -28,10 +27,6 @@ public class Usuario {
     private String nombre;
 
     @Column(nullable = false, unique = true)
-    @Pattern(
-        regexp = "^[A-Za-z0-9]+@[A-Za-z]+\\.[A-Za-z0-9]+$",
-        message = "El e-mail debe tener formato \"ejemplo@ejemplo.com\"."
-    )
     private String email;
 
     @Column(nullable = false)
