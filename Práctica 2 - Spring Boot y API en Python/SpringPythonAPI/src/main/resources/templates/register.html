@@ -173,12 +173,12 @@
       const o=document.getElementById('whiteFade');
       o.style.display='block';o.style.opacity='0';void o.offsetWidth;o.style.opacity='1';
 
-      /* Deja continuar el submit (no llamamos preventDefault). */
+      /* Deja continuar el submit. */
       return true;
     }
   </script>
 
-  <!-- Fade-out (solo enlaces, ya no formulario) -->
+  <!-- Fade-out  -->
   <script>
     document.querySelectorAll('.fadeLink').forEach(link=>{
       link.addEventListener('click',function(e){
