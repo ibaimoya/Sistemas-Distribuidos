@@ -13,7 +13,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     var formularioLogin = document.getElementById("formularioLogin");
     formularioLogin.addEventListener("submit", function(event) {
-        event.preventDefault();  // Evita recarga automática.
+        event.preventDefault();
 
         var usuario = document.getElementById("usuario").value.trim();
         var password = document.getElementById("password").value.trim();
