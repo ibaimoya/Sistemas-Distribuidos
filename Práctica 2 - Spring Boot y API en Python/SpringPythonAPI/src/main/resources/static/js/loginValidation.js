@@ -13,6 +13,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     var formularioLogin = document.getElementById("formularioLogin");
     formularioLogin.addEventListener("submit", function(event) {
+        event.preventDefault();  // Evita recarga automática.
+
         var usuario = document.getElementById("usuario").value.trim();
         var password = document.getElementById("password").value.trim();
         var usuarioError = document.getElementById("usuarioError");
@@ -21,18 +23,35 @@ document.addEventListener('DOMContentLoaded', function() {
         usuarioError.textContent = "";
         passwordError.textContent = "";
 
-        var valido = true;
+        var camposValidos = true;
 
         if (usuario === "") {
             usuarioError.textContent = "El nombre de usuario es obligatorio";
-            valido = false;
+            camposValidos = false;
         }
         if (password === "") {
             passwordError.textContent = "La contraseña es obligatoria.";
-            valido = false;
+            camposValidos = false;
         }
-        if (!valido) {
-            event.preventDefault();
+        if (!camposValidos) {
+            return;  
         }
+
+        fetch(this.action, {
+            method: this.method,
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: new URLSearchParams(new FormData(this))
+        })
+        .then(function(response) {
+            var destino = new URL(response.url);
+            if (destino.pathname === '/menu') {
+                window.location = response.url;  // Login correcto.
+            } else {
+                usuarioError.textContent = "El usuario o la contraseña no son correctos.";
+            }
+        })
+        .catch(function() {
+            passwordError.textContent = "Error de red, inténtalo más tarde.";
+        });
     });
 });
