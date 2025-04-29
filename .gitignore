@@ -1,0 +1,5 @@
+# Ignora archivos del sistema Mac 
+.DS_store
+
+# Ignora archivos de configuración de VS Code
+.vscode/
