@@ -390,9 +390,7 @@ public class ChatServerImpl implements ChatServer {
         }
 
         /**
-         * Caso del indulto.
-         * 
-         * @param serverMessage Mensaje informativo
+         * Caso del apagado.
          */
         private void shutdownCase(){
             String serverMessage = ChatServerImpl.YELLOW + "[*] " + ChatServerImpl.CYAN + "El servidor se está apagando...\n" + ChatServerImpl.RESET;
