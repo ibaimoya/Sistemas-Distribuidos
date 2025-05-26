@@ -21,6 +21,12 @@
     <properties>
         <java.version>17</java.version>
     </properties>
+        
+    <!-- SonarQube -->
+    <properties>
+        <sonar.organization>ibaimoya</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+    </properties>
 
     <dependencies>
         <!-- Web MVC -->
@@ -90,13 +96,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-        
-            <!-- Plugin de SonarQube -->
-            <plugin>
-                <groupId>org.sonarsource.scanner.maven</groupId>
-                <artifactId>sonar-maven-plugin</artifactId>
-                <version>3.10.0.2594</version>
             </plugin>
         </plugins>
     </build>
