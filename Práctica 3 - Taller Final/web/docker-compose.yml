@@ -1,0 +1,38 @@
+services:
+  sonarqube:
+    image: sonarqube:latest
+    ports:
+      - "9000:9000"
+    environment:
+      - SONARQUBE_JDBC_USERNAME=postgres
+      - SONARQUBE_JDBC_PASSWORD=postgres
+      - SONARQUBE_JDBC_URL=jdbc:postgresql://db:5432/sonarqube
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: midb
+    ports:
+      - "5432:5432"
+  api:
+    build: ./flask-api
+    ports: ["5000:5000"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/pokemon/pikachu"] # Cambiar cuando cambie la API
+      interval: 60s
+      timeout: 3s
+      retries: 5
+  app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+      - api
+    ports:
+      - "8080:8080"

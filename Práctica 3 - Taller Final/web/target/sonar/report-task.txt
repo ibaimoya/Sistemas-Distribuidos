@@ -1,0 +1,6 @@
+projectKey=web
+serverUrl=http://host.docker.internal:9000
+serverVersion=25.5.0.107428
+dashboardUrl=http://host.docker.internal:9000/dashboard?id=web
+ceTaskId=6923e956-7b24-47b9-a390-38900c406472
+ceTaskUrl=http://host.docker.internal:9000/api/ce/task?id=6923e956-7b24-47b9-a390-38900c406472

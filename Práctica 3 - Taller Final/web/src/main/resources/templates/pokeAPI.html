@@ -1,0 +1,336 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon"          th:href="@{/images/pokedex.png}" type="image/png">
+  <link rel="shortcut icon" th:href="@{/images/pokedex.png}">  
+  <title>PokeAPI</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    /* ----------  ESTILOS  ---------- */
+    body{
+      margin:0;min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden;
+      background:linear-gradient(to bottom,rgba(18,128,206,.864),rgba(9,126,198,.461));color:#fff;
+    }
+    .barraTop{background:rgba(0,0,0,.35);backdrop-filter:blur(4px);}
+    #whiteOverlay{position:fixed;inset:0;background:#fff;opacity:1;
+                  transition:opacity 2s ease-in-out;pointer-events:none;z-index:1000;}
+
+    @keyframes aparecer{from{transform:translateY(60px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+    @keyframes entrarIzq{from{transform:translateX(-120%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+
+    .animEntrada{opacity:0;animation:aparecer .8s ease-out .2s forwards;}
+    .animIzq{opacity:0;animation:entrarIzq .7s ease-out forwards;}
+
+    @keyframes fadeOutUp{from{opacity:1;transform:translateY(0);}to{opacity:0;transform:translateY(-50px);}}
+    .fadeOutUp{animation:fadeOutUp .5s ease-out forwards;}
+
+    @keyframes moveUp{from{transform:translateY(0);}to{transform:translateY(-15vh);}}
+    .moveUp{animation:moveUp .5s ease-out forwards;}
+
+    .search-container{display:flex;flex-direction:column;align-items:center;justify-content:center;
+                      min-height:40vh;transition:all .5s ease-out;padding-top:2rem;}
+
+    .pokemon-container{background:rgba(255,255,255,.15);backdrop-filter:blur(10px);border-radius:16px;
+                       padding:2rem;margin-top:0;max-width:800px;width:90%;opacity:0;transform:translateY(20px);
+                       transition:opacity .5s ease,transform .5s ease;position:relative;top:-190px;}
+    .pokemon-container.show{opacity:1;transform:translateY(0);}
+
+    .type-badge{padding:.5rem 1rem;border-radius:20px;font-weight:bold;text-transform:capitalize;margin-right:.5rem;}
+    .normal{background:#A8A878}.fire{background:#F08030}.water{background:#6890F0}.electric{background:#F8D030}
+    .grass{background:#78C850}.ice{background:#98D8D8}.fighting{background:#C03028}.poison{background:#A040A0}
+    .ground{background:#E0C068}.flying{background:#A890F0}.psychic{background:#F85888}.bug{background:#A8B820}
+    .rock{background:#B8A038}.ghost{background:#705898}.dragon{background:#7038F8}.dark{background:#705848}
+    .steel{background:#B8B8D0}.fairy{background:#EE99AC}
+
+    .stat-bar{height:10px;border-radius:5px;background:rgba(255,255,255,.3);overflow:hidden;margin-bottom:.5rem;}
+    .stat-fill{height:100%;background:#4CAF50;}
+
+    .btn-back{position:absolute;top:4rem;left:1rem;z-index:10;background:rgba(0,0,0,.25);border:none;border-radius:50%;
+              width:42px;height:42px;display:flex;justify-content:center;align-items:center;color:#fff;font-size:1.6rem;
+              transition:background .2s;opacity:0;animation:entrarIzq .7s ease-out .5s forwards;}
+    .btn-back:hover{background:rgba(0,0,0,.45);}
+
+    .loader{width:48px;height:48px;border:5px solid #FFF;border-bottom-color:transparent;border-radius:50%;display:none;
+            box-sizing:border-box;animation:rotation 1s linear infinite;}
+    @keyframes rotation{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+
+    .error-message{color:#ff6b6b;background:rgba(0,0,0,.2);padding:1rem;border-radius:8px;margin-top:1rem;display:none;}
+
+    .search-input{font-size:1rem;padding:.75rem 1rem;}
+    .header-logo{width:40px;height:40px;border-radius:50%;margin-right:10px;}
+
+    /* botón guardar */
+    #savePokemonBtn{
+      position: absolute;
+      left: 21.8%;
+      transform: translateX(-50%);
+      bottom: 120px;
+      z-index: 5;
+      display: none;
+      background: linear-gradient(to bottom, #ee1515 0%, #ee1515 50%, #fff 50%, #fff 100%);
+      border: 5px solid #333;
+      border-radius: 50px;
+      color: #333;
+      font-weight: bold;
+      padding: 8px 20px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    #savePokemonBtn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 20px;
+      height: 20px;
+      background-color: #fff;
+      border: 3px solid #333;
+      border-radius: 50%;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    #savePokemonBtn:hover {
+      transform: translateX(-50%) scale(1.05);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+    }
+    
+    #savePokemonBtn:active::before {
+      opacity: 1;
+    }
+    
+    #savePokemonBtn i {
+      margin-right: 8px;
+      font-size: 1.1rem;
+    }
+
+    /* -------- sugerencias -------- */
+    .suggestions-container{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:700px;width:95%;
+      margin-top:10px;padding:8px;background:rgba(0,0,0,.2);border-radius:10px;max-height:150px;overflow-y:auto;
+      opacity:0;transform:translateY(-10px);transition:opacity .3s,transform .3s;}
+    .suggestions-container.show{opacity:1;transform:translateY(0);}
+    .suggestion-item{color:#fff;background:rgba(255,255,255,.2);padding:5px 12px;border-radius:20px;cursor:pointer;
+      transition:background-color .2s,transform .2s;font-size:.9rem;text-transform:capitalize;white-space:nowrap;}
+    .suggestion-item:hover{background:rgba(255,255,255,.3);transform:scale(1.05);}
+    .suggestions-container::-webkit-scrollbar{width:8px;height:8px;}
+    .suggestions-container::-webkit-scrollbar-track{background:rgba(255,255,255,.1);border-radius:10px;}
+    .suggestions-container::-webkit-scrollbar-thumb{background:rgba(255,255,255,.3);border-radius:10px;}
+    .suggestions-container::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.4);}
+  </style>
+</head>
+
+<body>
+  <!-- Overlay -->
+  <div id="whiteOverlay"></div>
+
+  <!-- Botón volver -->
+  <a href="/menu" class="btn-back fadeLink" title="Volver al menú"><i class="bi bi-arrow-left-short"></i></a>
+
+  <!-- Barra superior -->
+  <header class="barraTop py-2 px-4 d-flex justify-content-between align-items-center animEntrada" style="animation-delay:.1s;">
+    <div class="d-flex align-items-center">
+      <img src="/images/pokedex.png" class="header-logo" alt="Logo">
+      <h4 class="m-0">PokeAPI</h4>
+    </div>
+    <span class="fw-bold" th:text="${usuarioActual}">Usuario</span>
+  </header>
+
+  <!-- Contenido -->
+  <main class="flex-grow-1 d-flex flex-column align-items-center">
+    <div id="searchContainer" class="search-container">
+      <h1 id="searchTitle" class="fw-bold text-center mb-4 animEntrada">Busca un Pokémon</h1>
+      <div class="input-group mb-1 animEntrada" style="max-width:700px;width:95%;">
+        <input type="text" id="pokemonSearch" class="form-control form-control-lg search-input"
+               placeholder="Nombre o número del Pokémon" aria-label="Nombre del Pokémon">
+        <button class="btn btn-light" type="button" id="searchButton"><i class="bi bi-search"></i></button>
+      </div>
+
+      <div id="suggestionsContainer" class="suggestions-container"></div>
+
+      <div id="loader" class="loader mt-4"></div>
+      <div id="errorMessage" class="error-message">Pokémon no encontrado. Intenta con otro nombre.</div>
+    </div>
+
+    <div id="pokemonContainer" class="pokemon-container mx-auto">
+      <div class="row">
+        <div class="col-md-5 text-center">
+          <img id="pokemonImage" src="/placeholder.svg" alt="Imagen del Pokémon"
+               class="img-fluid mb-3" style="max-height:250px;">
+          <div id="pokemonTypes" class="d-flex justify-content-center flex-wrap gap-2 mb-3"></div>
+        </div>
+        <div class="col-md-7">
+          <h2 id="pokemonName" class="text-capitalize fw-bold mb-3"></h2>
+          <div class="mb-4">
+            <div class="d-flex justify-content-between mb-2"><span>Altura:</span><span id="pokemonHeight"></span></div>
+            <div class="d-flex justify-content-between mb-2"><span>Peso:</span><span id="pokemonWeight"></span></div>
+            <div class="d-flex justify-content-between mb-2"><span>Habilidades:</span><span id="pokemonAbilities"></span></div>
+          </div>
+          <h5 class="mb-3">Estadísticas</h5>
+          <div id="pokemonStats"></div>
+        </div>
+      </div>
+
+      <!-- Botón Guardar -->
+      <button id="savePokemonBtn" class="btn">
+        <i class="bi bi-plus-circle-fill"></i>Capturar Pokémon
+      </button>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- ----------  JS  ---------- -->
+  <script>
+    /* ---------- carga de Pokémon para sugerencias ---------- */
+    let pokemonList = [];
+    async function cargarListaPokemon() {
+      try {
+        const r = await fetch('http://localhost:5000/api/pokemons');
+        const data = await r.json();
+        pokemonList = data.results.map(p => ({name:p.name,displayName:p.name[0].toUpperCase()+p.name.slice(1)}));
+      } catch(e){ console.error('No se pudo cargar la lista:',e);}
+    }
+
+    /* helpers visuales */
+    window.addEventListener('load',()=>{const o=document.getElementById('whiteOverlay');
+      setTimeout(()=>o.style.opacity='0',100);setTimeout(()=>o.style.display='none',2100);});
+
+    /* ---------- lógica principal ---------- */
+    document.addEventListener('DOMContentLoaded', () => {
+      cargarListaPokemon();
+
+      const searchInput = document.getElementById('pokemonSearch');
+      const searchButton = document.getElementById('searchButton');
+      const searchContainer = document.getElementById('searchContainer');
+      const searchTitle = document.getElementById('searchTitle');
+      const suggestionsContainer = document.getElementById('suggestionsContainer');
+      const pokemonContainer = document.getElementById('pokemonContainer');
+      const loader = document.getElementById('loader');
+      const errorMessage = document.getElementById('errorMessage');
+      const saveBtn = document.getElementById('savePokemonBtn');
+
+      const pokemonImage = document.getElementById('pokemonImage');
+      const pokemonName  = document.getElementById('pokemonName');
+      const pokemonTypes = document.getElementById('pokemonTypes');
+      const pokemonHeight = document.getElementById('pokemonHeight');
+      const pokemonWeight = document.getElementById('pokemonWeight');
+      const pokemonAbilities = document.getElementById('pokemonAbilities');
+      const pokemonStats = document.getElementById('pokemonStats');
+
+      pokemonContainer.style.display='none';
+      let firstSuccessfulSearch=true;
+
+      /* guarda el Pokémon actual */
+      saveBtn.addEventListener('click', async () => {
+        const { nombre, numero, imagen } = saveBtn.dataset;
+        if (!nombre) return;
+
+        try {
+          const res = await fetch('/api/pokemon', {
+            method : 'POST',
+            headers: { 'Content-Type':'application/json' },
+            body   : JSON.stringify({
+              nombre,
+              numero : Number(numero),
+              imagenUrl: imagen
+            })
+          });
+
+          if (res.ok) {
+            alert('Pokémon guardado ✔');
+          } else {
+            alert('No se pudo guardar: ' + (await res.text()));
+          }
+        } catch (e) {
+          console.error(e);
+          alert('Error al guardar');
+        }
+      });
+
+      /* sugerencias */
+      function updateSuggestions(){
+        const term=searchInput.value.toLowerCase().trim();
+        suggestionsContainer.innerHTML='';
+        if(term.length<2){suggestionsContainer.classList.remove('show');return;}
+        pokemonList.filter(p=>p.name.includes(term)).slice(0,20).forEach(p=>{
+          const div=document.createElement('div');
+          div.className='suggestion-item';div.textContent=p.displayName;
+          div.addEventListener('click',()=>{searchInput.value=p.name;suggestionsContainer.classList.remove('show');searchPokemon();});
+          suggestionsContainer.appendChild(div);
+        });
+        suggestionsContainer.classList.toggle('show', suggestionsContainer.childElementCount>0);
+      }
+
+      /* búsqueda principal */
+      async function searchPokemon(){
+        const q=searchInput.value.trim().toLowerCase(); if(!q) return;
+        suggestionsContainer.classList.remove('show');
+        loader.style.display='inline-block'; errorMessage.style.display='none';
+        try{
+          const r = await fetch(`http://localhost:5000/api/pokemon/${q}`);
+          if(!r.ok) throw new Error('Pokémon no encontrado');
+          const poke=await r.json();
+          if(firstSuccessfulSearch){searchTitle.classList.add('fadeOutUp');firstSuccessfulSearch=false;}
+          searchContainer.classList.add('moveUp');
+          displayPokemonData(poke);
+        }catch(e){console.error(e);errorMessage.style.display='block';pokemonContainer.style.display='none';}
+        finally{loader.style.display='none';}
+      }
+
+      /* pinta datos y muestra botón */
+      function displayPokemonData(poke){
+        const art= poke.sprites.other['official-artwork'].front_default || poke.sprites.front_default;
+        pokemonImage.src=art; pokemonImage.alt=`Imagen de ${poke.name}`; pokemonName.textContent=poke.name;
+        pokemonTypes.innerHTML=''; poke.types.forEach(t=>{
+          const span=document.createElement('span'); span.textContent=t.type.name; span.className=`type-badge ${t.type.name}`;
+          pokemonTypes.appendChild(span);
+        });
+        pokemonHeight.textContent=`${poke.height/10} m`;
+        pokemonWeight.textContent=`${poke.weight/10} kg`;
+        pokemonAbilities.textContent=poke.abilities.map(a=>a.ability.name.replace('-',' ')).join(', ');
+        pokemonStats.innerHTML='';
+        poke.stats.forEach(s=>{
+          const pct=s.base_stat/255*100;
+          pokemonStats.insertAdjacentHTML('beforeend',`
+            <div class="mb-3">
+              <div class="d-flex justify-content-between mb-1">
+                <span class="text-capitalize">${s.stat.name.replace('-',' ')}</span><span>${s.base_stat}</span>
+              </div>
+              <div class="stat-bar"><div class="stat-fill" style="width:${pct}%"></div></div>
+            </div>`);
+        });
+
+        pokemonContainer.style.display='block';
+        setTimeout(()=>pokemonContainer.classList.add('show'),100);
+
+        /* activar botón guardar */
+        saveBtn.dataset.nombre  = poke.name; 
+        saveBtn.dataset.numero = poke.id;
+        saveBtn.dataset.imagen = art;
+        saveBtn.style.display     = 'inline-flex';      
+      }
+
+      /* listeners */
+      searchInput.addEventListener('input',updateSuggestions);
+      searchButton.addEventListener('click',searchPokemon);
+      searchInput.addEventListener('keypress',e=>{if(e.key==='Enter') searchPokemon();});
+      document.addEventListener('click',e=>{if(!suggestionsContainer.contains(e.target)&&e.target!==searchInput)
+        suggestionsContainer.classList.remove('show');});
+
+      /* transición enlaces */
+      document.querySelectorAll('.fadeLink').forEach(l=>l.addEventListener('click',e=>{
+        e.preventDefault();const o=document.getElementById('whiteOverlay');o.style.display='block';o.style.opacity='0';
+        void o.offsetWidth;o.style.opacity='1';setTimeout(()=>window.location.href=l.href,1500);}));
+    });
+  </script>
+</body>
+</html>

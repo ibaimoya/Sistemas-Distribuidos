@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon"          th:href="@{/images/pokedex.png}" type="image/png">
+  <link rel="shortcut icon" th:href="@{/images/pokedex.png}">  
+  <title>Error inesperado</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  
+  <style>
+    /* Fondo degradado */
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(to bottom, rgba(18,128,206,.864), rgba(9,126,198,.461));
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    /* Overlay blanco */
+    #whiteOverlay {
+      position: fixed;
+      inset: 0;
+      background: #fff;
+      opacity: 1;
+      transition: opacity 2s ease-in-out;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    /* Animaciones de entrada */
+    @keyframes aparecer {
+      from { transform: translateY(60px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes flotar {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-15px); }
+      100% { transform: translateY(0px); }
+    }
+
+    @keyframes girar {
+      0% { transform: rotate(0deg); }
+      25% { transform: rotate(15deg); }
+      75% { transform: rotate(-15deg); }
+      100% { transform: rotate(0deg); }
+    }
+
+    .animEntrada { 
+      opacity: 0; 
+      animation: aparecer .8s ease-out forwards; 
+    }
+
+    .flotar {
+      animation: flotar 4s ease-in-out infinite;
+    }
+
+    .girar {
+      animation: girar 3s ease-in-out infinite;
+      transform-origin: center;
+    }
+
+    /* Animaciones de salida */
+    @keyframes salirArriba {
+      from { transform: translateY(0); opacity: 1; }
+      to { transform: translateY(-100vh); opacity: 0; }
+    }
+
+    @keyframes salirAbajo {
+      from { transform: translateY(0); opacity: 1; }
+      to { transform: translateY(100vh); opacity: 0; }
+    }
+
+    @keyframes salirIzquierda {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(-100vw); opacity: 0; }
+    }
+
+    @keyframes salirDerecha {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100vw); opacity: 0; }
+    }
+
+    .salirArriba { animation: salirArriba 0.8s ease-in forwards; }
+    .salirAbajo { animation: salirAbajo 0.8s ease-in forwards; }
+    .salirIzquierda { animation: salirIzquierda 0.8s ease-in forwards; }
+    .salirDerecha { animation: salirDerecha 0.8s ease-in forwards; }
+
+    /* Contenedor principal */
+    .error-container {
+      max-width: 600px;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      margin: 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Código de error */
+    .error-code {
+      font-size: 8rem;
+      font-weight: bold;
+      line-height: 1;
+      margin-bottom: 1rem;
+      text-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Botón de regreso */
+    .btn-home {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 2px solid white;
+      padding: 0.75rem 2rem;
+      font-weight: bold;
+      border-radius: 50px;
+      transition: all 0.3s ease;
+      margin-top: 2rem;
+    }
+
+    .btn-home:hover {
+      background: white;
+      color: rgba(18, 128, 206, 1);
+      transform: scale(1.05);
+    }
+
+    /* Engranajes */
+    .gear {
+      position: absolute;
+      opacity: 0.2;
+      z-index: -1;
+    }
+
+    .gear-1 {
+      top: 15%;
+      left: 15%;
+      font-size: 8rem;
+      animation: girar 10s linear infinite reverse;
+    }
+
+    .gear-2 {
+      bottom: 15%;
+      right: 15%;
+      font-size: 6rem;
+      animation: girar 7s linear infinite;
+    }
+
+    .gear-3 {
+      top: 60%;
+      left: 20%;
+      font-size: 5rem;
+      animation: girar 12s linear infinite;
+    }
+  </style>
+</head>
+<body>
+  <!-- Overlay blanco -->
+  <div id="whiteOverlay"></div>
+  
+  <!-- Engranajes de fondo -->
+  <div class="gear gear-1"><i class="bi bi-gear-fill"></i></div>
+  <div class="gear gear-2"><i class="bi bi-gear-fill"></i></div>
+  <div class="gear gear-3"><i class="bi bi-gear-fill"></i></div>
+  
+  <!-- Contenedor de error -->
+  <div class="error-container animEntrada" style="animation-delay: 0.3s;">
+    <div class="error-code flotar" th:text="${status ?: '500'}">500</div>
+    <h1 class="mb-4 animEntrada" style="animation-delay: 0.5s;">¡Ups! Algo se ha roto</h1>
+    
+    <div class="mb-4 animEntrada" style="animation-delay: 0.7s;">
+      <p class="mb-2">Parece que nuestros hamsters que hacen funcionar el servidor se han tomado un descanso.</p>
+      <p class="mb-0" th:if="${error}" th:text="${error}">Error</p>
+      <p class="mb-0" th:if="${message}" th:text="${message}">Mensaje de error</p>
+      <p class="mb-0" th:if="${timestamp}" th:text="${#dates.format(timestamp, 'dd-MM-yyyy HH:mm:ss')}">Fecha del error</p>
+    </div>
+    
+    <div class="girar animEntrada" style="animation-delay: 0.9s; font-size: 5rem; margin: 2rem 0;">
+      <i class="bi bi-tools"></i>
+    </div>
+    
+    <a href="/" class="btn btn-home fadeLink animEntrada" style="animation-delay: 1.1s;">
+      Volver al inicio
+    </a>
+  </div>
+  
+  <!-- Scripts -->
+  <script>
+    // Fade-in
+    window.addEventListener('load', () => {
+      const overlay = document.getElementById('whiteOverlay');
+      setTimeout(() => overlay.style.opacity = '0', 100);
+      setTimeout(() => overlay.style.display = 'none', 2100);
+    });
+
+    // Animación de salida para elementos
+    document.querySelectorAll('.fadeLink').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Detener animaciones actuales
+        document.querySelectorAll('.flotar, .girar, .mover').forEach(el => {
+          el.style.animation = 'none';
+        });
+        
+        // Animar salida de elementos en diferentes direcciones
+        const errorCode = document.querySelector('.error-code');
+        const title = document.querySelector('h1');
+        const message = document.querySelector('.mb-4:not(h1)');
+        const icon = document.querySelector('.girar');
+        const button = document.querySelector('.btn-home');
+        const gears = document.querySelectorAll('.gear');
+        
+        // Forzar reflow antes de aplicar nuevas animaciones
+        void document.body.offsetWidth;
+        
+        // Aplicar animaciones con diferentes retrasos
+        errorCode.classList.add('salirArriba');
+        title.classList.add('salirIzquierda');
+        title.style.animationDelay = '0.05s';
+        message.classList.add('salirDerecha');
+        message.style.animationDelay = '0.1s';
+        icon.classList.add('salirAbajo');
+        icon.style.animationDelay = '0.15s';
+        button.classList.add('salirAbajo');
+        button.style.animationDelay = '0.2s';
+        
+        // Animar engranajes
+        gears.forEach((gear, index) => {
+          const directions = ['salirIzquierda', 'salirDerecha', 'salirArriba'];
+          gear.classList.add(directions[index % directions.length]);
+          gear.style.animationDelay = `${0.1 * index}s`;
+        });
+        
+        // Mostrar overlay blanco
+        const overlay = document.getElementById('whiteOverlay');
+        overlay.style.display = 'block';
+        overlay.style.opacity = '0';
+        void overlay.offsetWidth; // Forzar reflow
+        overlay.style.opacity = '1';
+        
+        // Navegar después de las animaciones
+        setTimeout(() => window.location.href = this.href, 1500);
+      });
+    });
+  </script>
+</body>
+</html>
