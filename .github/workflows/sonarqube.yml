@@ -3,10 +3,15 @@ name: SonarCloud Analysis
 on:
   push:
     branches: [ main ]
+
 jobs:
   build:
     name: SonarCloud
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: 'Práctica 3 - Taller Final/web'
 
     steps:
       - name: Checkout del código
