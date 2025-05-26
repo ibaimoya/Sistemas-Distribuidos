@@ -1,16 +1,12 @@
-name: CI with SonarQube
+name: SonarCloud Analysis
 
 on:
   push:
     branches: [ main ]
-
 jobs:
-  sonarcloud:
+  build:
+    name: SonarCloud
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: 'Práctica 3 - Taller Final/web'
 
     steps:
       - name: Checkout del código
@@ -29,11 +25,12 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven
 
-      - name: Ejecutar análisis con SonarQube
+      - name: Ejecutar análisis con SonarCloud
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           mvn clean verify sonar:sonar \
             -Dsonar.projectKey=web \
-            -Dsonar.host.url=http://host.docker.internal:9000 \
+            -Dsonar.organization=tu_organizacion \
+            -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.login=$SONAR_TOKEN
