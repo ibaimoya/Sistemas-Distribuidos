@@ -13,7 +13,7 @@
 | Docker Compose | 2.27.0+ | [link](https://docs.docker.com/compose/install/#:~:text=Mac-,Windows,-Tip) |
 
 > [!NOTE]  
-> Para evitar problemas **Docker Desktop** se recomienda que esté abierto antes de comenzar la ejecución.
+> Para evitar problemas se recomienda que **Docker Desktop** esté abierto antes de comenzar la ejecución.
 
 ---
 
