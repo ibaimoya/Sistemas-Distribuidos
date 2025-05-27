@@ -13,7 +13,7 @@
     </parent>
 
     <groupId>es.ubu.lsi</groupId>
-    <artifactId>practica2.0</artifactId>
+    <artifactId>Practica3</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>web</name>
     <description>Práctica 3: Taller Final</description>
@@ -22,6 +22,7 @@
         <java.version>17</java.version>
 
         <!-- SonarQube -->
+        <sonar.projectKey>ibaimoya_Sistemas-Distribuidos</sonar.projectKey>
         <sonar.organization>ibaimoya</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
