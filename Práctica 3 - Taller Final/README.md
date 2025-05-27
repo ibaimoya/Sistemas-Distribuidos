@@ -1,11 +1,12 @@
 # Práctica 3 - Taller Final
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=ibaimoya_practica3web&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ibaimoya_practica3web)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=ibaimoya_practica3web&metric=bugs)](https://sonarcloud.io/component_measures?id=ibaimoya_practica3web&metric=bugs)
-[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=ibaimoya_practica3web&metric=code_smells)](https://sonarcloud.io/component_measures?id=ibaimoya_practica3web&metric=code_smells)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=ibaimoya_practica3web&metric=coverage)](https://sonarcloud.io/component_measures?id=ibaimoya_practica3web&metric=coverage)
-[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=ibaimoya_practica3web&metric=duplicated_lines_density)](https://sonarcloud.io/component_measures?id=ibaimoya_practica3web&metric=duplicated_lines_density)
+[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=ibaimoya_Sistemas-Distribuidos&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ibaimoya_Sistemas-Distribuidos)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=ibaimoya_Sistemas-Distribuidos&metric=bugs)](https://sonarcloud.io/component_measures?id=ibaimoya_Sistemas-Distribuidos&metric=bugs)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=ibaimoya_Sistemas-Distribuidos&metric=code_smells)](https://sonarcloud.io/component_measures?id=ibaimoya_Sistemas-Distribuidos&metric=code_smells)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=ibaimoya_Sistemas-Distribuidos&metric=coverage)](https://sonarcloud.io/component_measures?id=ibaimoya_Sistemas-Distribuidos&metric=coverage)
+[![Duplicated Lines](https://sonarcloud.io/api/project_badges/measure?project=ibaimoya_Sistemas-Distribuidos&metric=duplicated_lines_density)](https://sonarcloud.io/component_measures?id=ibaimoya_Sistemas-Distribuidos&metric=duplicated_lines_density)
+
 
 ****
 
