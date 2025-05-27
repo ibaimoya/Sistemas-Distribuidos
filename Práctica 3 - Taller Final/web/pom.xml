@@ -15,8 +15,8 @@
     <groupId>es.ubu.lsi</groupId>
     <artifactId>practica2.0</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>practica2.0</name>
-    <description>Práctica 2.0: Spring Boot y API en Python</description>
+    <name>web</name>
+    <description>Práctica 3: Taller Final</description>
 
     <properties>
         <java.version>17</java.version>
