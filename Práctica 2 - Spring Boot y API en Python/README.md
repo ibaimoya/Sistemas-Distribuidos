@@ -7,9 +7,13 @@
 
 ## Requisitos
 
-- Tener instalados:
-  - [Docker](https://docs.docker.com/get-docker/)  
-  - [Docker Compose](https://docs.docker.com/compose/install/)  
+| **Producto** | **Versión** | **Descarga** |
+|:------:|:--------:|:------------:|
+| Docker Desktop | 4.40.0+ | [link](https://www.docker.com/products/docker-desktop/) |
+| Docker Compose | 2.27.0+ | [link](https://docs.docker.com/compose/install/#:~:text=Mac-,Windows,-Tip) |
+
+> [!NOTE]  
+> Para evitar problemas **Docker Desktop** se recomienda que esté abierto antes de comenzar la ejecución.
 
 ---
 
@@ -17,14 +21,12 @@
 
 1. Clona o sitúate en la carpeta raíz de la práctica 2:
 ```
-cd Práctica\ 2\ -\ Spring\ Boot\ y\ API\ en\ Python/SpringPythonAPI/
+cd "Práctica 2 - Spring Boot y API en Python/SpringPythonAPI/"
 ```
 2. Arranca todos los contenedores con Docker Compose:
 ```
 docker-compose up --build
 ```
-> [!IMPORTANT]  
-> Docker Compose tiene que estar ya instalado en la máquina host.
 
 Esto desplegará una web en el puerto **8080** y la API en el **5050**.
 
@@ -35,4 +37,3 @@ Esto desplegará una web en el puerto **8080** y la API en el **5050**.
 ```
 http://localhost:8080
 ```
-
