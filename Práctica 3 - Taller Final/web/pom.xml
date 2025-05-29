@@ -30,7 +30,6 @@
 		<java.version>17</java.version>
 
 		<!-- SonarQube -->
-        <sonar.projectKey>ibaimoya_Sistemas-Distribuidos</sonar.projectKey>
         <sonar.organization>ibaimoya</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
 	</properties>
@@ -84,6 +83,11 @@
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+		<scope>test</scope>
+</dependency>
 	</dependencies>
 
 	<build>
