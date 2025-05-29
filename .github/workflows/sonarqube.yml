@@ -48,3 +48,7 @@ jobs:
         mvn -B verify \
             org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
             -Dsonar.sources=src
+
+    - name: Show test results
+      if: always()
+      run: cat target/surefire-reports/*.txt || true
