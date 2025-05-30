@@ -21,25 +21,23 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         /* Permite el acceso a estas rutas sin autenticación. */
         http
-                .csrf(csrf -> csrf.disable())
-
-                // Define las rutas públicas y privadas.
+                /* Define las rutas públicas y privadas. */
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/", "/login", "/register",
                                 "/css/**", "/js/**", "/images/**",
-                                "/api/**")
+                                "/api/**", "/favicon.ico", "/error/**")
                         .permitAll()
                         .anyRequest().authenticated())
 
-                // Configuración del formulario de login.
+                /* Configuración del formulario de login. */
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/auth")
                         .defaultSuccessUrl("/menu", true)
                         .permitAll())
 
-                // Configuración del logout.
+                /* Configuración del logout. */
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/")
