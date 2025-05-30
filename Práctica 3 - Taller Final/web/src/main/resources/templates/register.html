@@ -168,7 +168,7 @@
 <main class="card">
     <h1 class="brand">Kinora</h1>
 
-    <form th:action="@{/register}" th:object="${usuario}" method="post">
+    <form th:action="@{/register}" th:object="${registerForm}" method="post">
         <div class="field">
             <label for="nombre">Nombre</label>
             <input id="nombre" th:field="*{nombre}" required autocomplete="name">
