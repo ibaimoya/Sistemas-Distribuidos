@@ -1,85 +1,97 @@
+import os
 from flask import Flask, jsonify, abort, request
 from flask_cors import CORS
 import requests
-from errors import AppError, NotFoundError, TimeoutError, ExternalAPIError, FileNotFoundErrorApp, FileReadErrorApp
+from errors import (AppError, NotFoundError, TimeoutError,
+                    ExternalAPIError, FileNotFoundErrorApp, FileReadErrorApp)
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
+# ───────────────────────────────
+#      CONFIGURACIÓN TMDB
+# ───────────────────────────────
+TMDB_API_KEY = os.getenv("TMDB_API_KEY")
+if not TMDB_API_KEY:
+    raise RuntimeError(
+        "Define la variable de entorno TMDB_API_KEY con tu clave de The Movie Database."
+    )
+
+TMDB_MOVIE_URL   = "https://api.themoviedb.org/3/movie/{}"
+TMDB_SEARCH_URL  = "https://api.themoviedb.org/3/search/movie"
+TMDB_POPULAR_URL = "https://api.themoviedb.org/3/movie/popular"
+
+
+def tmdb_get(url, **params):
+    """Wrapper que añade api_key y maneja timeouts / HTTP."""
+    params.setdefault("api_key", TMDB_API_KEY)
+    try:
+        r = requests.get(url, params=params, timeout=4)
+        r.raise_for_status()
+        return r.json()
+    except requests.exceptions.HTTPError:
+        raise NotFoundError("Recurso no encontrado en TMDB.")
+    except requests.exceptions.Timeout:
+        raise TimeoutError()
+    except Exception:
+        raise ExternalAPIError()
+
+
+# ───────────────────────────────
+#  MANEJO DE ERRORES GENÉRICOS
+# ───────────────────────────────
 @app.errorhandler(AppError)
 def handle_app_error(exc: AppError):
-    """Convierte cualquier AppError en un JSON {'error': mensaje} con su código HTTP."""
     resp = jsonify(exc.to_dict())
     resp.status_code = exc.status_code
     return resp
 
+
 @app.errorhandler(Exception)
 def handle_unexpected(exc: Exception):
-    """Todo lo demás (bugs, errores inesperados) cae aquí y devuelve un 500 genérico."""
     generic = AppError("Error interno del servidor.")
     return handle_app_error(generic)
 
-POKE_URL = "https://pokeapi.co/api/v2/pokemon/{}"
-POKE_LIST_URL = "https://pokeapi.co/api/v2/pokemon"
+
+# ───────────────────────────────
+#      ENDPOINTS PRINCIPALES
+# ───────────────────────────────
+@app.route("/api/movie/<int:movie_id>")
+def get_movie(movie_id: int):
+    """Detalles de una película por ID."""
+    data = tmdb_get(TMDB_MOVIE_URL.format(movie_id))
+    return jsonify(data)
 
 
-@app.route("/api/pokemon/<name_or_id>")
-def get_pokemon(name_or_id: str):
-    try:
-        r = requests.get(POKE_URL.format(name_or_id.lower()), timeout=4)
-        r.raise_for_status()
-        return jsonify(r.json())
-    except requests.exceptions.HTTPError:
-        raise NotFoundError(f"Pokémon “{name_or_id}” no encontrado.")
-    except requests.exceptions.Timeout:
-        raise TimeoutError()
-    except Exception:
-        raise ExternalAPIError()
+@app.route("/api/movies")
+def get_movies():
+    """
+    Lista de películas.
+    • Si viene ?query=… → búsqueda por título.
+    • Sin query → lista popular (paginada).
+    Acepta ?page=N (1-1000).
+    """
+    query = request.args.get("query")
+    page  = request.args.get("page", 1)
+
+    if query:
+        data = tmdb_get(TMDB_SEARCH_URL, query=query, page=page)
+    else:
+        data = tmdb_get(TMDB_POPULAR_URL, page=page)
+
+    return jsonify(data)
 
 
-@app.route("/api/pokemons")
-def get_pokemon_list():
-
-    limit  = request.args.get("limit", 2000)
-    offset = request.args.get("offset", 0)
-    try:
-        r = requests.get(
-            f"{POKE_LIST_URL}?limit={limit}&offset={offset}",
-            timeout=4
-        )
-        r.raise_for_status()
-        return jsonify(r.json())
-    except requests.exceptions.HTTPError:
-        raise NotFoundError(f"Lista no encontrada.")
-    except requests.exceptions.Timeout:
-        raise TimeoutError()
-    except Exception:
-        raise ExternalAPIError()
-
-
-@app.errorhandler(404)
-def handle_404(e):
-    return jsonify(error=str(e)), 404
-
-@app.errorhandler(504)
-def handle_504(e):
-    return jsonify(error=str(e)), 504
-
-@app.errorhandler(500)
-def handle_500(e):
-
-    return jsonify(error=str(e)), 500
-
-# Simulaciones de errores para pruebas. #
-
+# ───────────────────────────────
+#      ENDPOINTS DE PRUEBA 
+# ───────────────────────────────
 @app.route("/api/test/timeout")
 def test_timeout():
-    # Simula un timeout directamente
     abort(504, "Tiempo de espera agotado.")
+
 
 @app.route("/api/test/error")
 def test_error():
-    # Lanza una excepción no manejada para probar el 500
     raise RuntimeError("Error interno simulado")
 
 
@@ -87,7 +99,6 @@ def test_error():
 def test_file():
     path = request.args.get("path")
     if not path:
-        # ahora no hace falta pasar status_code
         raise AppError("Falta el parámetro 'path'.", status_code=400)
 
     try:
@@ -98,7 +109,6 @@ def test_file():
         raise FileNotFoundErrorApp(path)
     except PermissionError:
         raise FileReadErrorApp(path)
-    
 
 
 if __name__ == "__main__":
