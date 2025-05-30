@@ -10,8 +10,7 @@ services:
   api:
     build: ./flask-api
     ports: ["5000:5000"] 
-    env_file:
-      - .env
+    env_file: ./flask-api/.env
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/api/tmdb/movie/550"]
