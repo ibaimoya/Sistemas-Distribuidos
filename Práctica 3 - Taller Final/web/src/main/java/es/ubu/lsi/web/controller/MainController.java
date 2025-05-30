@@ -54,10 +54,4 @@ public class MainController {
         }
         return "menu";
     }
-
-    @GetMapping("/pokeAPI")
-    public String pantallaPokeAPI(Model model, Principal principal) {
-        model.addAttribute("usuarioActual", principal.getName());
-        return "pokeAPI";
-    }
 }
