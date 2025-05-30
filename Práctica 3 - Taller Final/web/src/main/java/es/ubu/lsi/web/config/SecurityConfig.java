@@ -26,7 +26,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/", "/login", "/register",
                                 "/css/**", "/js/**", "/images/**",
-                                "/api/**", "/favicon.ico", "/error/**")
+                                "/api/**", "/favicon.ico", "/error/**",
+                                "/robots.txt")
                         .permitAll()
                         .anyRequest().authenticated())
 
