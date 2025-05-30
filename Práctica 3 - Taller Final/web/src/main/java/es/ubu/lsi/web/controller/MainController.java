@@ -10,7 +10,7 @@ import es.ubu.lsi.web.form.RegisterForm;
 
 @Controller
 public class MainController {
-    String REDIRECCION_HOME = "redirect:/home";
+    private static final String REDIRECCION_HOME = "redirect:/home";
 
     @GetMapping("/")
     public String paginaPrincipal(Principal principal) {
@@ -31,8 +31,8 @@ public class MainController {
             return REDIRECCION_HOME;
         }
 
-        if (!model.containsAttribute("registroForm")) {
-            model.addAttribute("registroForm", new RegisterForm());
+        if (!model.containsAttribute("registerForm")) {
+            model.addAttribute("registerForm", new RegisterForm());
         }
         return "register";
     }
