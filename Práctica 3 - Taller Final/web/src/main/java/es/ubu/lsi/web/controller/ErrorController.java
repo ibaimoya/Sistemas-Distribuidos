@@ -1,4 +1,4 @@
-package es.ubu.lsi.SpringPythonAPI.controller;
+package es.ubu.lsi.web.controller;
 
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -19,6 +19,6 @@ public class ErrorController {
   @ExceptionHandler(Exception.class)
   public String errorGeneral(Model model, Exception ex) {
     model.addAttribute("mensaje", ex.getMessage());
-    return "error"; 
+    return "error";
   }
 }
