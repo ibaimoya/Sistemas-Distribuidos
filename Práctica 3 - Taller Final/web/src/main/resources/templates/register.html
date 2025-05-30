@@ -170,8 +170,8 @@
 
     <form th:action="@{/register}" th:object="${registerForm}" method="post">
         <div class="field">
-            <label for="nombre">Nombre</label>
-            <input id="nombre" th:field="*{nombre}" required autocomplete="name">
+            <label for="usuario">Usuario</label>
+            <input id="usuario" th:field="*{usuario}" required autocomplete="usuario">
         </div>
 
         <div class="field">
@@ -185,6 +185,13 @@
             <i class="password-toggle fas fa-eye" id="togglePassword"></i>
         </div>
 
+        <div class="field">
+            <label for="confirm">Confirmar contraseña</label>
+            <input id="confirm" th:field="*{confirm}" type="password" required>
+            <i class="password-toggle fas fa-eye"></i>
+
+        </div>
+
         <button class="btn-green">Crear cuenta</button>
 
         <p class="muted">
@@ -195,17 +202,17 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const togglePassword = document.getElementById('togglePassword');
-        const passwordInput = document.getElementById('password');
-        
-        togglePassword.addEventListener('click', function() {
-            // Toggle password visibility
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            
-            // Toggle icon
+        document.querySelectorAll('.password-toggle').forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            // Busca el input justo antes del icono
+            const input = this.previousElementSibling;
+            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+            input.setAttribute('type', type);
+
+            // Cambia el icono
             this.classList.toggle('fa-eye');
             this.classList.toggle('fa-eye-slash');
+        });
         });
     });
 </script>

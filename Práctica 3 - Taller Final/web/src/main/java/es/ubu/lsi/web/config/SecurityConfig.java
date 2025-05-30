@@ -35,7 +35,7 @@ public class SecurityConfig {
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/auth")
-                        .defaultSuccessUrl("/menu", true)
+                        .defaultSuccessUrl("/home", true)
                         .permitAll())
 
                 /* Configuración del logout. */
