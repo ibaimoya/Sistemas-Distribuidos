@@ -92,4 +92,25 @@ public class AdminController {
         usuarioRepo.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    /**
+     * Obtiene las películas favoritas de un usuario por su ID.
+     * 
+     * @param id el ID del usuario
+     * @return una lista de mapas con los datos de las películas favoritas (id, title, poster_path)
+     */
+    @GetMapping("/users/{id}/movies")
+    public List<Map<String, Object>> userMovies(@PathVariable Long id) {
+
+        Usuario u = usuarioRepo.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        return favoritoRepo.findByUsuarioOrderByIdDesc(u).stream()
+            .map(f -> Map.<String,Object>of(
+                "id",          f.getMovieId(),
+                "title",       f.getTitle(),
+                "poster_path", f.getPosterPath()
+            ))
+            .toList();
+    }
 }
