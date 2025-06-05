@@ -19,4 +19,13 @@ public class RegisterRequest {
 
     @NotBlank(message = "Debe confirmar la contraseña")
     private String confirm;
+
+    // Getters adicionales para compatibilidad con el frontend
+    public String getUsername() {
+        return usuario;
+    }
+
+    public void setUsername(String username) {
+        this.usuario = username;
+    }
 }

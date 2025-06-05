@@ -6,7 +6,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    email: '',
+    username: '',
     password: ''
   });
 
@@ -23,7 +23,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/login', {
+        const response = await fetch('/auth/login', {        
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -57,14 +57,14 @@ export default function Login() {
           )}
 
           <div className="space-y-2">
-            <label htmlFor="email" className="block text-sm font-medium text-white">
-              Correo
+            <label htmlFor="username" className="block text-sm font-medium text-white">
+              Nombre de usuario
             </label>
             <input
-              id="email"
-              name="email"
-              type="email"
-              value={formData.email}
+              id="username"
+              name="username"
+              type="text"
+              value={formData.username}
               onChange={handleChange}
               required
               disabled={loading}
@@ -94,7 +94,7 @@ export default function Login() {
 
           <button
             type="submit"
-            disabled={loading || !formData.email || !formData.password}
+            disabled={loading || !formData.username || !formData.password}
             className="w-full bg-[#1db954] text-white font-bold py-3 px-4 rounded-full text-base tracking-wide transition-all duration-300 hover:scale-[1.02] hover:bg-[#1ed760] hover:shadow-[0_4px_12px_rgba(29,185,84,0.2)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}

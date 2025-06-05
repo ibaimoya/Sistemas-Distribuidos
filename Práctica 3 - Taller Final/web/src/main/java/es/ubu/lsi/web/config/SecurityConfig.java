@@ -29,7 +29,8 @@ public class SecurityConfig {
                                                                 "/login",
                                                                 "/register",
                                                                 "/auth/**",
-                                                                "/api/public/**")
+                                                                "/api/public/**",
+                                                                "robots.txt")
                                                 .permitAll()
                                                 .requestMatchers("/api/**").authenticated()
                                                 .anyRequest().permitAll() // Permite todo lo demás para React Router

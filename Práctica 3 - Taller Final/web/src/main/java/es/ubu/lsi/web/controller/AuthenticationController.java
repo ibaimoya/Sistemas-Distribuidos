@@ -10,12 +10,14 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import es.ubu.lsi.web.form.RegisterForm;
+import es.ubu.lsi.web.dto.LoginRequest;
+import es.ubu.lsi.web.dto.RegisterRequest;
 import es.ubu.lsi.web.service.AuthService;
 
 @RestController
@@ -29,18 +31,18 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Map<String, Object>> procesarRegistro(@Valid @RequestBody RegisterForm form) {
+    public ResponseEntity<Map<String, Object>> procesarRegistro(@Valid @RequestBody RegisterRequest request) {
         Map<String, Object> response = new HashMap<>();
 
         // Valida que password y confirm coincidan
-        if (!form.getPassword().equals(form.getConfirm())) {
+        if (!request.getPassword().equals(request.getConfirm())) {
             response.put("success", false);
             response.put("message", "Las contraseñas no coinciden");
             return ResponseEntity.badRequest().body(response);
         }
 
         // Comprueba existencia de usuario o email
-        if (authService.existeUsuario(form.getUsuario(), form.getEmail())) {
+        if (authService.existeUsuario(request.getUsuario(), request.getEmail())) {
             response.put("success", false);
             response.put("message", "El usuario o el correo ya existe");
             return ResponseEntity.badRequest().body(response);
@@ -48,9 +50,9 @@ public class AuthenticationController {
 
         // Registra al usuario
         authService.registrar(
-                form.getUsuario(),
-                form.getEmail(),
-                form.getPassword());
+                request.getUsuario(),
+                request.getEmail(),
+                request.getPassword());
 
         response.put("success", true);
         response.put("message", "Cuenta creada correctamente");
@@ -58,15 +60,13 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> procesarLogin(
-            @RequestParam("username") String username,
-            @RequestParam("password") String password) {
+    public ResponseEntity<Map<String, Object>> procesarLogin(@Valid @RequestBody LoginRequest request) {
 
         Map<String, Object> response = new HashMap<>();
 
-        if (authService.login(username, password)) {
+        if (authService.login(request.getUsername(), request.getPassword())) {
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    username,
+                    request.getUsername(),
                     null,
                     Collections.emptyList());
 
@@ -81,7 +81,7 @@ public class AuthenticationController {
                     SecurityContextHolder.getContext());
 
             response.put("success", true);
-            response.put("username", username);
+            response.put("username", request.getUsername());
             return ResponseEntity.ok(response);
         }
 
@@ -92,9 +92,28 @@ public class AuthenticationController {
 
     @PostMapping("/logout")
     public ResponseEntity<Map<String, Object>> logout() {
+        SecurityContextHolder.clearContext();
+
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
         response.put("message", "Sesión cerrada");
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/check")
+    public ResponseEntity<Map<String, Object>> checkAuth() {
+        Map<String, Object> response = new HashMap<>();
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth != null && auth.isAuthenticated() &&
+                !auth.getPrincipal().equals("anonymousUser")) {
+            response.put("authenticated", true);
+            response.put("username", auth.getName());
+        } else {
+            response.put("authenticated", false);
+        }
+
         return ResponseEntity.ok(response);
     }
 }
