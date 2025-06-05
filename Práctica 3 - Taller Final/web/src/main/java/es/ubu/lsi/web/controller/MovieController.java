@@ -84,7 +84,7 @@ public class MovieController {
         }
     }
 
-    @GetMapping("/movie/{movieId}")
+    @GetMapping("/movies/{movieId}")
     public ResponseEntity<?> getMovie(@PathVariable int movieId) {
         String url = "https://api.themoviedb.org/3/movie/" + movieId;
 
