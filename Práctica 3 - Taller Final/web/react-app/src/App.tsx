@@ -7,6 +7,7 @@ import MovieDetail from './pages/MovieDetail';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import MyMovies from './pages/MyMovies';
+import AdminPanel from './pages/AdminPanel';
 
 const App: React.FC = () => {
   return (
@@ -58,6 +59,14 @@ const App: React.FC = () => {
             <MyMovies />
           </ProtectedRoute>
         } 
+      />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute adminOnly>
+            <AdminPanel />
+          </ProtectedRoute>
+        }
       />
       <Route path="*" element={<h1 style={{ color: 'white' }}>404 - Página no encontrada</h1>} />
     </Routes>

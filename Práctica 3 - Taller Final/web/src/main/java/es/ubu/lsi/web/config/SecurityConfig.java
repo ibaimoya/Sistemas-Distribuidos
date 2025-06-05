@@ -2,50 +2,65 @@ package es.ubu.lsi.web.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
-import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 
+import es.ubu.lsi.web.security.CustomUserDetailsService;
+
+/**
+ * Configuración de seguridad para la aplicación web.
+ * Define las reglas de autorización y el servicio de detalles del usuario.
+ * 
+ * @author Ibai Moya Aroz
+ * @version 1.0
+ * @since 1.0
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     /**
-     * Configuración de seguridad para la aplicación web.
-     * Esta configuración protege las APIs y desactiva el formulario de login automático.
-     * Permite el acceso a todas las demás rutas sin autenticación, ya que esto se gestiona
-     * desde el propio FrontEnd (en ProtectedRoute.tsx).
-     * @param http HttpSecurity para configurar la seguridad web
-     * @return SecurityFilterChain configurado
-     * @throws Exception si ocurre un error durante la configuración
+     * Servicio de detalles del usuario personalizado.
+     * Se utiliza para cargar los detalles del usuario durante la autenticación.
+     */
+    private final UserDetailsService uds;
+ 
+    /**
+     * Constructor que inicializa el servicio de detalles del usuario.
+     * 
+     * @param uds el servicio de detalles del usuario personalizado
+     */
+    public SecurityConfig(CustomUserDetailsService uds) {
+        this.uds = uds;
+    }
+
+    /**
+     * Configura la cadena de filtros de seguridad.
+     * Define las reglas de autorización y el servicio de detalles del usuario.
+     * 
+     * @param http la configuración de seguridad HTTP
+     * @return la cadena de filtros de seguridad configurada
+     * @throws Exception si ocurre un error al configurar la seguridad
      */
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
         http
-            
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/**").authenticated()
-                .anyRequest().permitAll()  // Todo lo demás es libre
-            )
-            
-            /* Desactiva el login form automático.  */
-            .formLogin(form -> form.disable())
-
-            /* Configuración de logout. (Comprobar si realmente es útil) */
-            .logout(logout -> logout
-                .logoutUrl("/api/logout")
-                .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.OK))
-                .permitAll())
-
-            /* Para APIs no autenticadas, devuelve 401. */
-            .exceptionHandling(ex -> ex
-                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
-            
-            // Desactiva CSRF (Cambiar en un futuro).
-            .csrf(csrf -> csrf.disable());
+        .csrf(csrf -> csrf.disable())
+        .authorizeHttpRequests(auth -> auth
+        .requestMatchers("/admin/**").hasRole("ADMIN")
+        .requestMatchers("/api/**").authenticated()
+        .anyRequest().permitAll()
+        )
+        .exceptionHandling(ex -> ex
+        .authenticationEntryPoint((req, res, e) -> res.sendRedirect("/login"))
+        .accessDeniedHandler((req, res, e) -> res.sendRedirect("/"))
+        )
+        .userDetailsService(uds)
+        .httpBasic(Customizer.withDefaults());
 
         return http.build();
     }

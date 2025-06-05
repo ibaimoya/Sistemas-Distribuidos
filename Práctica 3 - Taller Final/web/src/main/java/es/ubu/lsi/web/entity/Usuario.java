@@ -2,6 +2,8 @@ package es.ubu.lsi.web.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -32,6 +34,10 @@ public class Usuario {
     @Column(nullable = false)
     private String passwordHash;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role = Role.USER;
+
     /**
      * Constructor por defecto necesario para JPA.
      * Se utiliza para crear instancias de la clase sin inicializar los atributos.
@@ -60,4 +66,6 @@ public class Usuario {
     public void   setEmail(String e)        { this.email = e; }
     public String getPasswordHash()         { return passwordHash; }
     public void   setPasswordHash(String h) { this.passwordHash = h; }
+    public Role getRole()                   { return role; }
+    public void setRole(Role r)             { this.role = r; }
 }

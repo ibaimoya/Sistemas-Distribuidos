@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, Heart, User, X } from 'lucide-react';
+import { LogOut, Heart, User, X, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -26,6 +26,8 @@ const Home: React.FC = () => {
   const [animatingMovie, setAnimatingMovie] = useState<number | null>(null);
   const [feedbackType, setFeedbackType] = useState<'add' | 'remove' | null>(null);  
   const navigate = useNavigate();
+  const [isAdmin, setIsAdmin] = useState(false);
+
 
   useEffect(() => {
     checkAuth();
@@ -61,6 +63,7 @@ const Home: React.FC = () => {
       if (data.authenticated) {
         setIsAuthenticated(true);
         setUsername(data.username);
+        setIsAdmin(Boolean(data.admin));
       } 
     } catch (error) {
       console.error('Error checking auth:', error);
@@ -243,6 +246,15 @@ const Home: React.FC = () => {
                   <Heart size={16} className="mr-2" />
                   Mis Películas
                 </Link>
+                {isAdmin && (
+                  <Link
+                    to="/admin"
+                    className="flex items-center w-full px-4 py-2 text-sm hover:bg-[#1db954] hover:text-white transition-colors"
+                  >
+                    <Shield size={16} className="mr-2" />
+                    Panel admin
+                  </Link>
+                )}
                 <button
                   onClick={handleLogout}
                   className="flex items-center w-full px-4 py-2 text-sm hover:bg-[#1db954] hover:text-white transition-colors"
