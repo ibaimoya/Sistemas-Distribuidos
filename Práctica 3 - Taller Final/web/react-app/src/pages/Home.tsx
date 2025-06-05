@@ -19,6 +19,8 @@ const Home: React.FC = () => {
   const [username, setUsername] = useState('Usuario');
   const [hoveredMovie, setHoveredMovie] = useState<number | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -35,13 +37,13 @@ const Home: React.FC = () => {
       ) {
         const nextPage = page + 1;
         setPage(nextPage);
-        fetchMovies(nextPage, true);
+        fetchMovies(nextPage, true, searchQuery);
       }
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [page, hasMore, loading]);
+  }, [page, hasMore, loading, searchQuery]);
 
   const checkAuth = async () => {
     try {
@@ -59,12 +61,29 @@ const Home: React.FC = () => {
     }
   };
 
-  const fetchMovies = async (pageNumber = 1, append = false) => {
+  const handleSearch = async (query: string) => {
+    setSearchQuery(query);
+    setIsSearching(query.length > 0);
+    setPage(1);
+    setHasMore(true);
+    
+    if (query.trim() === '') {
+      fetchMovies(1, false, '');
+    } else {
+      fetchMovies(1, false, query);
+    }
+  };
+
+  const fetchMovies = async (pageNumber = 1, append = false, query = '') => {
     if (loading) return;
     
     setLoading(true);
     try {
-      const response = await fetch(`/api/movies?page=${pageNumber}`, {
+      const url = query 
+        ? `/api/movies?query=${encodeURIComponent(query)}&page=${pageNumber}`
+        : `/api/movies?page=${pageNumber}`;
+        
+      const response = await fetch(url, {
         credentials: 'include'
       });
       
@@ -152,8 +171,32 @@ const Home: React.FC = () => {
         </div>
       </header>
 
+      <div className="pt-24 pb-8 px-8">
+        <div className="max-w-2xl mx-auto relative">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Buscar películas..."
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="w-full px-6 py-4 bg-[#1a1a1a] text-white placeholder-gray-400 rounded-full border border-[#333] focus:outline-none focus:border-[#1db954] focus:ring-2 focus:ring-[#1db954]/20 transition-all duration-300 text-lg"
+            />
+            <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+              <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
+          {isSearching && (
+            <div className="mt-2 text-center text-sm text-[#1db954]">
+              Buscando: "{searchQuery}"
+            </div>
+          )}
+        </div>
+      </div>
+      
       {/* Main Content */}
-      <main className="pt-24 px-8">
+      <main className="px-8">        
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {movies.map((movie) => (
             <motion.div
@@ -191,7 +234,7 @@ const Home: React.FC = () => {
             </motion.div>
           ))}
         </div>
-        
+
         {/* Loading indicator */}
         {loading && (
           <div className="flex justify-center py-8">
