@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import MovieDetail from './pages/MovieDetail';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import MyMovies from './pages/MyMovies';
 
 const App: React.FC = () => {
   return (
@@ -47,6 +48,14 @@ const App: React.FC = () => {
         element={
           <ProtectedRoute>
             <MovieDetail />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/my-movies" 
+        element={
+          <ProtectedRoute>
+            <MyMovies />
           </ProtectedRoute>
         } 
       />

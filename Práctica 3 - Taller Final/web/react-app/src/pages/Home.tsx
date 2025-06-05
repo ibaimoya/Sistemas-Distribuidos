@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LogOut, Heart, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 interface Movie {
   id: number;
@@ -21,10 +22,13 @@ const Home: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [likedMovies, setLikedMovies] = useState<Set<number>>(new Set());
+  
 
   useEffect(() => {
     checkAuth();
     fetchMovies();
+    loadUserFavorites();
   }, []);
 
   useEffect(() => {
@@ -112,11 +116,37 @@ const Home: React.FC = () => {
         credentials: 'include',
       });
       
+      const data = await response.json();
+      if (data.success) {
+        if (data.isLiked) {
+          setLikedMovies(prev => new Set([...prev, movieId]));
+        } else {
+          setLikedMovies(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(movieId);
+            return newSet;
+          });
+        }
+      }
+      
       if (response.status === 401) {
         window.location.href = '/login';
       }
     } catch (error) {
       console.error('Error liking movie:', error);
+    }
+  };
+
+  const loadUserFavorites = async () => {
+    try {
+      const response = await fetch('/api/movies/favorites', {
+        credentials: 'include'
+      });
+      const data = await response.json();
+      const favoriteIds = new Set(data.results?.map((movie: Movie) => movie.id) || []);
+      setLikedMovies(favoriteIds);
+    } catch (error) {
+      console.error('Error loading favorites:', error);
     }
   };
 
@@ -158,6 +188,13 @@ const Home: React.FC = () => {
                 onMouseEnter={() => setShowUserMenu(true)}
                 onMouseLeave={() => setShowUserMenu(false)}
               >
+                <Link
+                  to="/my-movies"
+                  className="flex items-center w-full px-4 py-2 text-sm hover:bg-[#1db954] hover:text-white transition-colors"
+                >
+                  <Heart size={16} className="mr-2" />
+                  Mis Películas
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="flex items-center w-full px-4 py-2 text-sm hover:bg-[#1db954] hover:text-white transition-colors"
@@ -222,12 +259,19 @@ const Home: React.FC = () => {
                   >
                     <h3 className="text-lg font-semibold">{movie.title}</h3>
                     <p className="text-sm line-clamp-3">{movie.overview}</p>
-                    <button
-                      onClick={() => handleLike(movie.id)}
-                      className="self-end p-2 rounded-full bg-[#1db954] hover:bg-[#1ed760] transition-colors"
-                    >
-                      <Heart size={20} />
-                    </button>
+                      <button
+                        onClick={() => handleLike(movie.id)}
+                        className={`self-end p-2 rounded-full transition-colors ${
+                          likedMovies.has(movie.id) 
+                            ? 'bg-red-600 hover:bg-red-700' 
+                            : 'bg-[#1db954] hover:bg-[#1ed760]'
+                        }`}
+                      >
+                        <Heart 
+                          size={20} 
+                          fill={likedMovies.has(movie.id) ? 'white' : 'none'}
+                        />
+                      </button>
                   </motion.div>
                 )}
               </AnimatePresence>
