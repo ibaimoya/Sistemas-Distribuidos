@@ -71,7 +71,7 @@ const Home: React.FC = () => {
         method: 'POST',
         credentials: 'include',
       });
-      window.location.href = '/login';
+      window.location.href = '/welcome';
     } catch (error) {
       console.error('Error logging out:', error);
     }
@@ -82,8 +82,7 @@ const Home: React.FC = () => {
     <div className="min-h-screen bg-[#111111] text-white">
       {/* Header */}
       <header className="fixed w-full z-50 flex justify-between items-center px-8 py-4 bg-gradient-to-b from-black/80 to-transparent">
-        <h1 className="text-3xl font-bold text-[#1db954]">Kinora</h1>
-
+        <h1 className="text-3xl font-bold text-[#1db954] transition-transform duration-300 hover:scale-105 cursor-pointer">Kinora</h1>
         <div className="relative">
           <button
             className="flex items-center space-x-2 hover:text-[#1db954] transition-colors"
