@@ -2,48 +2,57 @@ package es.ubu.lsi.web.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    /**
-     * Configura la seguridad de la aplicación web.
-     * 
-     * @param http Seguridad HTTP
-     * @return SecurityFilterChain (cadena de filtros de seguridad)
-     * @throws Exception Excepción de seguridad
-     */
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        /* Permite el acceso a estas rutas sin autenticación. */
-        http
-                /* Define las rutas públicas y privadas. */
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/", "/login", "/register",
-                                "/css/**", "/js/**", "/images/**",
-                                "/api/**", "/favicon.ico", "/error/**",
-                                "/robots.txt")
-                        .permitAll()
-                        .anyRequest().authenticated())
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+                http
+                                // Configuración de autorización
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers(
+                                                                "/",
+                                                                "/index.html",
+                                                                "/static/**",
+                                                                "/assets/**",
+                                                                "/*.js",
+                                                                "/*.css",
+                                                                "/*.ico",
+                                                                "/login",
+                                                                "/register",
+                                                                "/auth/**",
+                                                                "/api/public/**")
+                                                .permitAll()
+                                                .requestMatchers("/api/**").authenticated()
+                                                .anyRequest().permitAll() // Permite todo lo demás para React Router
+                                )
 
-                /* Configuración del formulario de login. */
-                .formLogin(form -> form
-                        .loginPage("/login")
-                        .loginProcessingUrl("/auth")
-                        .defaultSuccessUrl("/home", true)
-                        .permitAll())
+                                // Desactiva el login form automático de Spring
+                                .formLogin(form -> form.disable())
 
-                /* Configuración del logout. */
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/")
-                        .permitAll());
+                                // Configuración de logout
+                                .logout(logout -> logout
+                                                .logoutUrl("/api/logout")
+                                                .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(
+                                                                HttpStatus.OK))
+                                                .permitAll())
 
-        return http.build();
-    }
+                                // Para peticiones no autenticadas, devuelve 401 en lugar de redirigir
+                                .exceptionHandling(ex -> ex
+                                                .authenticationEntryPoint(
+                                                                new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+
+                                // Desactiva CSRF para simplificar (puedes habilitarlo más tarde)
+                                .csrf(csrf -> csrf.disable());
+
+                return http.build();
+        }
 }
