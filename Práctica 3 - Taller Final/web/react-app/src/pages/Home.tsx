@@ -33,11 +33,11 @@ const Home: React.FC = () => {
         setUsername(data.username);
       } else {
         // Redirige a login si no está autenticado
-        window.location.href = '/login';
+        window.location.href = '/welcome';
       }
     } catch (error) {
       console.error('Error checking auth:', error);
-      window.location.href = '/login';
+      window.location.href = '/welcome';
     }
   };
 
@@ -48,7 +48,7 @@ const Home: React.FC = () => {
       });
       
       if (response.status === 401) {
-        window.location.href = '/login';
+        window.location.href = '/welcome';
         return;
       }
       
