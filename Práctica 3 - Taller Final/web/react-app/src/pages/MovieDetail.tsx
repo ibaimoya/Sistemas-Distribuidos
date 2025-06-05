@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Star, ArrowLeft, Clock, Calendar, Heart, X } from 'lucide-react';
+import { Star, ArrowLeft, Clock, Calendar, Heart, X, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Movie {
@@ -14,6 +14,13 @@ interface Movie {
   genres: { id: number; name: string }[];
 }
 
+interface RatingData {
+  userRating: number;
+  hasRated: boolean;
+  averageRating: number;
+  totalRatings: number;
+}
+
 const MovieDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [movie, setMovie] = useState<Movie | null>(null);
@@ -23,10 +30,19 @@ const MovieDetail: React.FC = () => {
   const [isLiked, setIsLiked] = useState(false);
   const [animatingLike, setAnimatingLike] = useState(false);
   const [feedbackType, setFeedbackType] = useState<'add' | 'remove' | null>(null);
+  const [ratingData, setRatingData] = useState<RatingData>({
+    userRating: 0,
+    hasRated: false,
+    averageRating: 0,
+    totalRatings: 0
+  });
+  const [isRatingLoading, setIsRatingLoading] = useState(false);
+  const [ratingMessage, setRatingMessage] = useState<string>('');
 
   useEffect(() => {
     fetchMovieDetails();
     checkIfLiked();
+    loadUserRating();
   }, [id]);
 
   const fetchMovieDetails = async () => {
@@ -55,10 +71,29 @@ const MovieDetail: React.FC = () => {
     }
   };
 
-  const handleRating = async (rating: number) => {
-    setUserRating(rating);
+  const loadUserRating = async () => {
     try {
-      await fetch(`/api/movies/${id}/rate`, {
+      const response = await fetch(`/api/movies/${id}/rating`, {
+        credentials: 'include'
+      });
+      const data = await response.json();
+      
+      setRatingData(data);
+      setUserRating(data.userRating);
+      
+    } catch (error) {
+      console.error('Error loading user rating:', error);
+    }
+  };
+
+  const handleRating = async (rating: number) => {
+    if (isRatingLoading) return;
+    
+    setIsRatingLoading(true);
+    setRatingMessage('');
+    
+    try {
+      const response = await fetch(`/api/movies/${id}/rate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -66,8 +101,37 @@ const MovieDetail: React.FC = () => {
         body: JSON.stringify({ rating }),
         credentials: 'include'
       });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setUserRating(rating);
+        setRatingData({
+          userRating: rating,
+          hasRated: true,
+          averageRating: data.averageRating,
+          totalRatings: data.totalRatings
+        });
+        
+        // Mostrar mensaje de confirmación
+        if (data.action === 'updated') {
+          setRatingMessage('¡Valoración actualizada!');
+        } else {
+          setRatingMessage('¡Valoración guardada!');
+        }
+        
+        // Limpiar mensaje después de 3 segundos
+        setTimeout(() => setRatingMessage(''), 3000);
+      } else {
+        setRatingMessage('Error al guardar valoración');
+        setTimeout(() => setRatingMessage(''), 3000);
+      }
     } catch (error) {
       console.error('Error rating movie:', error);
+      setRatingMessage('Error de conexión');
+      setTimeout(() => setRatingMessage(''), 3000);
+    } finally {
+      setIsRatingLoading(false);
     }
   };
 
@@ -286,8 +350,16 @@ const MovieDetail: React.FC = () => {
 
                 {/* Rating Section */}
                 <div className="bg-[#1a1a1a] rounded-lg p-6 mb-6">
-                  <h3 className="text-xl font-semibold mb-4">Tu valoración</h3>
-                  <div className="flex items-center gap-2">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-xl font-semibold">Tu valoración</h3>
+                    {ratingData.hasRated && (
+                      <span className="text-sm text-[#1db954]">
+                        Ya has valorado esta película
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center gap-2 mb-4">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <motion.button
                         key={star}
@@ -297,6 +369,7 @@ const MovieDetail: React.FC = () => {
                         onMouseEnter={() => setHoverRating(star)}
                         onMouseLeave={() => setHoverRating(0)}
                         className="relative"
+                        disabled={isRatingLoading}
                       >
                         <Star
                           size={32}
@@ -304,9 +377,9 @@ const MovieDetail: React.FC = () => {
                             (hoverRating || userRating) >= star
                               ? 'text-yellow-400 fill-yellow-400'
                               : 'text-gray-600'
-                          }`}
+                          } ${isRatingLoading ? 'opacity-50' : ''}`}
                         />
-                        {userRating === star && (
+                        {userRating === star && !isRatingLoading && (
                           <motion.div
                             className="absolute inset-0 rounded-full"
                             initial={{ scale: 0 }}
@@ -319,12 +392,51 @@ const MovieDetail: React.FC = () => {
                     <span className="ml-4 text-2xl font-bold text-yellow-400">
                       {userRating > 0 ? userRating : ''}
                     </span>
+                    {isRatingLoading && (
+                      <div className="ml-2 w-4 h-4 border-2 border-[#1db954] border-t-transparent rounded-full animate-spin"></div>
+                    )}
+                  </div>
+
+                  {/* Message de confirmación */}
+                  <AnimatePresence>
+                    {ratingMessage && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className={`text-sm mt-2 ${
+                          ratingMessage.includes('Error') ? 'text-red-400' : 'text-[#1db954]'
+                        }`}
+                      >
+                        {ratingMessage}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Community Rating */}
+                <div className="bg-[#1a1a1a] rounded-lg p-6 mb-6">
+                  <h3 className="text-xl font-semibold mb-4">Valoración de la comunidad</h3>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Star size={24} className="text-yellow-400 fill-yellow-400 mr-2" />
+                      <span className="text-2xl font-bold">
+                        {ratingData.averageRating > 0 ? ratingData.averageRating : 'Sin valorar'}
+                      </span>
+                      {ratingData.averageRating > 0 && (
+                        <span className="text-gray-400 ml-2">/ 5</span>
+                      )}
+                    </div>
+                    <div className="flex items-center text-gray-400">
+                      <Users size={20} className="mr-2" />
+                      <span>{ratingData.totalRatings} valoraciones</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Average Rating */}
+                {/* TMDB Rating */}
                 <div className="bg-[#1a1a1a] rounded-lg p-6">
-                  <h3 className="text-xl font-semibold mb-4">Valoración media</h3>
+                  <h3 className="text-xl font-semibold mb-4">Valoración TMDB</h3>
                   <div className="flex items-center">
                     <div className="flex items-center">
                       <Star size={24} className="text-yellow-400 fill-yellow-400 mr-2" />
