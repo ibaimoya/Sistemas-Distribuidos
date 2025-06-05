@@ -10,7 +10,11 @@ interface Movie {
 }
 
 const Home: React.FC = () => {
+
   const [movies, setMovies] = useState<Movie[]>([]);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [username, setUsername] = useState('Usuario');
   const [hoveredMovie, setHoveredMovie] = useState<number | null>(null);
@@ -20,6 +24,24 @@ const Home: React.FC = () => {
     checkAuth();
     fetchMovies();
   }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + document.documentElement.scrollTop >= 
+        document.documentElement.offsetHeight - 1000 &&
+        hasMore && 
+        !loading
+      ) {
+        const nextPage = page + 1;
+        setPage(nextPage);
+        fetchMovies(nextPage, true);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [page, hasMore, loading]);
 
   const checkAuth = async () => {
     try {
@@ -37,16 +59,30 @@ const Home: React.FC = () => {
     }
   };
 
-  const fetchMovies = async () => {
+  const fetchMovies = async (pageNumber = 1, append = false) => {
+    if (loading) return;
+    
+    setLoading(true);
     try {
-      const response = await fetch('/api/movies', {
+      const response = await fetch(`/api/movies?page=${pageNumber}`, {
         credentials: 'include'
       });
       
       const data = await response.json();
-      setMovies(data.results || []);
+      const newMovies = data.results || [];
+      
+      if (append) {
+        setMovies(prev => [...prev, ...newMovies]);
+      } else {
+        setMovies(newMovies);
+      }
+      
+      setHasMore(newMovies.length > 0 && pageNumber < (data.total_pages || 500));
+      
     } catch (error) {
       console.error('Error fetching movies:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -155,6 +191,24 @@ const Home: React.FC = () => {
             </motion.div>
           ))}
         </div>
+        
+        {/* Loading indicator */}
+        {loading && (
+          <div className="flex justify-center py-8">
+            <div className="flex space-x-2">
+              <div className="w-3 h-3 bg-[#1db954] rounded-full animate-bounce"></div>
+              <div className="w-3 h-3 bg-[#1db954] rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+              <div className="w-3 h-3 bg-[#1db954] rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+            </div>
+          </div>
+        )}
+
+        {!hasMore && movies.length > 0 && (
+          <div className="text-center py-8 text-gray-400">
+            No hay más películas que mostrar
+          </div>
+        )} 
+
       </main>
     </div>
   );
