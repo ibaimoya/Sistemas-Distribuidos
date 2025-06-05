@@ -1,13 +1,15 @@
 package es.ubu.lsi.web.controller;
 
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -104,33 +106,42 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> procesarLogin(@Valid @RequestBody LoginRequest request) {
 
-        Map<String, Object> response = new HashMap<>();
+    Map<String, Object> res = new HashMap<>();
 
-        if (authService.login(request.getUsername(), request.getPassword())) {
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    request.getUsername(),
-                    null,
-                    Collections.emptyList());
-
-            SecurityContextHolder.getContext().setAuthentication(authToken);
-
-            HttpSession session = ((ServletRequestAttributes) RequestContextHolder
-                    .currentRequestAttributes())
-                    .getRequest()
-                    .getSession(true);
-            session.setAttribute(
-                    "SPRING_SECURITY_CONTEXT",
-                    SecurityContextHolder.getContext());
-
-            response.put("success", true);
-            response.put("username", request.getUsername());
-            return ResponseEntity.ok(response);
-        }
-
-        response.put("success", false);
-        response.put("message", "Credenciales incorrectas");
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    /* Comprueba usuario y contraseña. */
+    if (!authService.login(request.getUsername(), request.getPassword())) {
+        res.put("success", false);
+        res.put("message", "Credenciales incorrectas");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(res);
     }
+
+    Usuario u = usuarioRepo.findByNombre(request.getUsername()).orElseThrow();
+
+    List<GrantedAuthority> auths = List.of(
+            new SimpleGrantedAuthority("ROLE_" + u.getRole().name())
+    );
+
+    UsernamePasswordAuthenticationToken authToken =
+            new UsernamePasswordAuthenticationToken(
+                    u.getNombre(),
+                    null,
+                    auths 
+            );
+
+    SecurityContextHolder.getContext().setAuthentication(authToken);
+
+    HttpSession session = ((ServletRequestAttributes) RequestContextHolder
+            .currentRequestAttributes())
+            .getRequest()
+            .getSession(true);
+
+    session.setAttribute("SPRING_SECURITY_CONTEXT",
+                         SecurityContextHolder.getContext());
+
+    res.put("success",  true);
+    res.put("username", u.getNombre());
+    return ResponseEntity.ok(res);
+}
 
     /**
      * Cierra la sesión del usuario actual.
