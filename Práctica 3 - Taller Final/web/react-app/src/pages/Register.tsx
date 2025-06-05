@@ -7,7 +7,7 @@ export default function Register() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    username: '',
+    usuario: '',
     email: '',
     password: '',
     confirm: ''
@@ -31,7 +31,7 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/register', {
+      const response = await fetch('/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -65,14 +65,14 @@ export default function Register() {
           )}
 
           <div className="space-y-2">
-            <label htmlFor="username" className="block text-sm font-medium text-white">
+            <label htmlFor="usuario" className="block text-sm font-medium text-white">
               Usuario
             </label>
             <input
-              id="username"
-              name="username"
+              id="usuario"
+              name="usuario"
               type="text"
-              value={formData.username}
+              value={formData.usuario}
               onChange={handleChange}
               required
               disabled={loading}
@@ -138,7 +138,7 @@ export default function Register() {
 
           <button
             type="submit"
-            disabled={loading || !formData.username || !formData.email || !formData.password || !formData.confirm}
+            disabled={loading || !formData.usuario || !formData.email || !formData.password || !formData.confirm}
             className="w-full bg-[#1db954] text-white font-bold py-3 px-4 rounded-full text-base tracking-wide transition-all duration-300 hover:scale-[1.02] hover:bg-[#1ed760] hover:shadow-[0_4px_12px_rgba(29,185,84,0.2)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Creando cuenta...' : 'Crear cuenta'}
