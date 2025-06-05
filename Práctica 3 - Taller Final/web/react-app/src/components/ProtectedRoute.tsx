@@ -41,7 +41,16 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }, [requireAuth, redirectTo]);
 
   if (isAuthenticated === null) {
-    return <div className="min-h-screen bg-black text-white flex items-center justify-center">Cargando...</div>;
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="relative">
+          <div className="w-16 h-16 border-4 border-[#1db954]/20 border-t-[#1db954] rounded-full animate-spin"></div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-8 h-8 bg-[#1db954]/20 rounded-full animate-pulse"></div>
+          </div>
+        </div>
+      </div>
+    );  
   }
 
   return <>{children}</>;
