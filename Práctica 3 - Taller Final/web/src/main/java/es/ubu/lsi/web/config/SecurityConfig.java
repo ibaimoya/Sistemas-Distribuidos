@@ -13,47 +13,40 @@ import org.springframework.security.web.authentication.logout.HttpStatusReturnin
 @EnableWebSecurity
 public class SecurityConfig {
 
-        @Bean
-        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-                http
-                                // Configuración de autorización
-                                .authorizeHttpRequests(auth -> auth
-                                                .requestMatchers(
-                                                                "/",
-                                                                "/index.html",
-                                                                "/static/**",
-                                                                "/assets/**",
-                                                                "/*.js",
-                                                                "/*.css",
-                                                                "/*.ico",
-                                                                "/login",
-                                                                "/register",
-                                                                "/auth/**",
-                                                                "/api/public/**",
-                                                                "robots.txt")
-                                                .permitAll()
-                                                .requestMatchers("/api/**").authenticated()
-                                                .anyRequest().permitAll() // Permite todo lo demás para React Router
-                                )
+    /**
+     * Configuración de seguridad para la aplicación web.
+     * Esta configuración protege las APIs y desactiva el formulario de login automático.
+     * Permite el acceso a todas las demás rutas sin autenticación, ya que esto se gestiona
+     * desde el propio FrontEnd (en ProtectedRoute.tsx).
+     * @param http HttpSecurity para configurar la seguridad web
+     * @return SecurityFilterChain configurado
+     * @throws Exception si ocurre un error durante la configuración
+     */
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/**").authenticated()
+                .anyRequest().permitAll()  // Todo lo demás es libre
+            )
+            
+            /* Desactiva el login form automático.  */
+            .formLogin(form -> form.disable())
 
-                                // Desactiva el login form automático de Spring
-                                .formLogin(form -> form.disable())
+            /* Configuración de logout. (Comprobar si realmente es útil) */
+            .logout(logout -> logout
+                .logoutUrl("/api/logout")
+                .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.OK))
+                .permitAll())
 
-                                // Configuración de logout
-                                .logout(logout -> logout
-                                                .logoutUrl("/api/logout")
-                                                .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(
-                                                                HttpStatus.OK))
-                                                .permitAll())
+            /* Para APIs no autenticadas, devuelve 401. */
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+            
+            // Desactiva CSRF (Cambiar en un futuro).
+            .csrf(csrf -> csrf.disable());
 
-                                // Para peticiones no autenticadas, devuelve 401 en lugar de redirigir
-                                .exceptionHandling(ex -> ex
-                                                .authenticationEntryPoint(
-                                                                new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
-
-                                // Desactiva CSRF para simplificar (puedes habilitarlo más tarde)
-                                .csrf(csrf -> csrf.disable());
-
-                return http.build();
-        }
+        return http.build();
+    }
 }

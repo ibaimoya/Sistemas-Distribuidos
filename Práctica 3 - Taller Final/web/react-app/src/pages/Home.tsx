@@ -31,13 +31,9 @@ const Home: React.FC = () => {
       if (data.authenticated) {
         setIsAuthenticated(true);
         setUsername(data.username);
-      } else {
-        // Redirige a login si no está autenticado
-        window.location.href = '/welcome';
-      }
+      } 
     } catch (error) {
       console.error('Error checking auth:', error);
-      window.location.href = '/welcome';
     }
   };
 
@@ -46,11 +42,6 @@ const Home: React.FC = () => {
       const response = await fetch('/api/movies', {
         credentials: 'include'
       });
-      
-      if (response.status === 401) {
-        window.location.href = '/welcome';
-        return;
-      }
       
       const data = await response.json();
       setMovies(data.results || []);
@@ -86,9 +77,6 @@ const Home: React.FC = () => {
     }
   };
 
-  if (!isAuthenticated) {
-    return <div>Cargando...</div>;
-  }
 
   return (
     <div className="min-h-screen bg-[#111111] text-white">
