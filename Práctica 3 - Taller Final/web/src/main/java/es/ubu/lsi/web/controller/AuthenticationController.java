@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
@@ -91,8 +92,13 @@ public class AuthenticationController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Map<String, Object>> logout() {
+    public ResponseEntity<Map<String, Object>> logout(HttpServletRequest request) {
         SecurityContextHolder.clearContext();
+
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
 
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
@@ -101,8 +107,14 @@ public class AuthenticationController {
     }
 
     @GetMapping("/check")
-    public ResponseEntity<Map<String, Object>> checkAuth() {
+    public ResponseEntity<Map<String, Object>> checkAuth(HttpServletRequest request) {
         Map<String, Object> response = new HashMap<>();
+
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            response.put("authenticated", false);
+            return ResponseEntity.ok(response);
+        }
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
