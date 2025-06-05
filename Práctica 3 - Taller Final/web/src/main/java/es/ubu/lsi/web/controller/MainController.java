@@ -13,7 +13,7 @@ public class MainController {
      * 
      * @return la vista de index.html
      */
-    @GetMapping(value = { "/", "/welcome", "/login", "/register", "/movie/*" })
+    @GetMapping(value = { "/", "/welcome", "/login", "/register", "/my-movies", "/movie/*" })
     public String index() {
         return "forward:/index.html";
     }
