@@ -15,8 +15,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import es.ubu.lsi.web.entity.Role;
 import es.ubu.lsi.web.entity.Usuario;
+import es.ubu.lsi.web.entity.Valoracion;
 import es.ubu.lsi.web.repository.FavoritoRepository;
 import es.ubu.lsi.web.repository.UsuarioRepository;
+import es.ubu.lsi.web.repository.ValoracionRepository;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -39,6 +41,9 @@ public class AdminController {
 
     /** Repositorio para acceder a los datos de favoritos de los usuarios. */
     private final FavoritoRepository favoritoRepo;
+
+    /** Repositorio para acceder a las valoraciones de los usuarios. */
+    private final ValoracionRepository valoracionRepository;
 
     /**
      * Lista todos los usuarios registrados en la aplicación, excluyendo al administrador.
@@ -97,7 +102,7 @@ public class AdminController {
      * Obtiene las películas favoritas de un usuario por su ID.
      * 
      * @param id el ID del usuario
-     * @return una lista de mapas con los datos de las películas favoritas (id, title, poster_path)
+     * @return una lista de mapas con los datos de las películas favoritas (id, title, poster_path, rating)
      */
     @GetMapping("/users/{id}/movies")
     public List<Map<String, Object>> userMovies(@PathVariable Long id) {
@@ -106,11 +111,19 @@ public class AdminController {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         return favoritoRepo.findByUsuarioOrderByIdDesc(u).stream()
-            .map(f -> Map.<String,Object>of(
-                "id",          f.getMovieId(),
-                "title",       f.getTitle(),
-                "poster_path", f.getPosterPath()
-            ))
+            .map(fav -> {
+                Integer rating = valoracionRepository
+                        .findByUsuarioAndMovieId(u, fav.getMovieId())
+                        .map(Valoracion::getRating)
+                        .orElse(null);
+
+                return Map.<String,Object>of(
+                        "id",          fav.getMovieId(),
+                        "title",       fav.getTitle(),
+                        "poster_path", fav.getPosterPath(),
+                        "rating",      rating == null ? "-" : rating 
+                        );
+            })
             .toList();
     }
 }
