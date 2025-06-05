@@ -37,3 +37,9 @@ build/
 
 ## MacOS ## 
 .DS_store
+
+## React ##
+**/node_modules/
+**/dist/
+**/.env.local
+**/assets/

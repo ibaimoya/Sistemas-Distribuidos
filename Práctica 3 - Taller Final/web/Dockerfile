@@ -6,7 +6,7 @@ WORKDIR /frontend
 COPY react-app/package*.json ./
 RUN npm ci
 
-COPY react-app/ .
+COPY react-app/ ./
 RUN npm run build
 
 # Compilación de Java.
@@ -17,6 +17,8 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 
+COPY --from=react-builder /frontend/dist ./src/main/resources/static
+
 RUN mvn clean package -DskipTests
 
 # Imagen final para ejecutar la aplicación Java.
@@ -25,7 +27,6 @@ FROM eclipse-temurin:17-jdk
 WORKDIR /app
 
 COPY --from=builder /app/target/*.jar app.jar
-COPY --from=react-builder /frontend/dist/ ./static/app/
 
 EXPOSE 8080
 
