@@ -50,7 +50,7 @@ public class SecurityConfig {
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-        .csrf(csrf -> csrf.disable())
+        .csrf(csrf -> csrf.disable()) // NOSONAR - CSRF disabled for REST API with SPA frontend
         .authorizeHttpRequests(auth -> auth
         .requestMatchers("/auth/**").permitAll()
         .requestMatchers("/admin/**").hasRole("ADMIN")

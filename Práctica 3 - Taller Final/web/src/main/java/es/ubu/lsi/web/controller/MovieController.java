@@ -349,7 +349,7 @@ public class MovieController {
         int rating = body.getOrDefault("rating", 0);
         if (rating < 1 || rating > 5) {
             return ResponseEntity.badRequest()
-                                .body(Map.of("success",false,"message","Rating fuera de rango"));
+                                .body(Map.of(SUCCESS_KEY,false,MESSAGE_KEY,"Rating fuera de rango"));
         }
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -380,7 +380,7 @@ public class MovieController {
         long total = valoracionRepository.countByMovieId(movieId);
 
         Map<String,Object> res = new HashMap<>();
-        res.put("success", true);
+        res.put(SUCCESS_KEY, true);
         res.put("action",  action);
         res.put("averageRating", Math.round(average * 10) / 10.0);
         res.put("totalRatings",  total);
