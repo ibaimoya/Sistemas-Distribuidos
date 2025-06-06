@@ -28,6 +28,7 @@ import es.ubu.lsi.web.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest; 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Controlador REST para la autenticación de usuarios.
@@ -39,6 +40,7 @@ import jakarta.validation.Valid;
  */
 @RestController
 @RequestMapping("/auth")
+@RequiredArgsConstructor
 public class AuthenticationController {
 
     /** Servicio de autenticación para manejar el registro y login de usuarios. */
@@ -46,18 +48,6 @@ public class AuthenticationController {
 
     /** Repositorio de usuarios para acceder a la base de datos. */
     private final UsuarioRepository  usuarioRepo;
-
-    /**
-     * Constructor del controlador de autenticación.
-     * 
-     * @param authService el servicio de autenticación
-     * @param usuarioRepo el repositorio de usuarios
-     */
-    public AuthenticationController(AuthService authService,
-                                    UsuarioRepository usuarioRepo) {
-        this.authService = authService;
-        this.usuarioRepo = usuarioRepo;
-    }
 
     /**
      * Procesa el registro de un nuevo usuario.
