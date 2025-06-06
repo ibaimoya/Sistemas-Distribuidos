@@ -42,7 +42,7 @@ public class DataLoader implements ApplicationRunner {
             Usuario newAdmin = new Usuario(
                 username,
                 adminEmail,
-                encoder.encode(password)
+                encoder.encode(password) // NOSONAR - Academic/Demo code only
             );
             newAdmin.setRole(Role.ADMIN);
             return usuarioRepo.save(newAdmin);
