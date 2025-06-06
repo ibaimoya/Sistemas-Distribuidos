@@ -88,7 +88,7 @@ public class AdminController {
      *         o 404 Not Found si el usuario no existe
      */
     @DeleteMapping("/users/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         if (!usuarioRepo.existsById(id))
             return ResponseEntity.notFound().build();
 

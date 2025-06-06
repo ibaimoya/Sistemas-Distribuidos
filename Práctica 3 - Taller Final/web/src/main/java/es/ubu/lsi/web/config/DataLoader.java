@@ -33,14 +33,24 @@ public class DataLoader implements ApplicationRunner {
      */
     @Override
     public void run(ApplicationArguments args) {
-        usuarioRepo.findByNombre("admin").orElseGet(() -> {
-            Usuario admin = new Usuario(
-                "admin",
-                "admin@admin.com",
-                encoder.encode("admin")
+
+        String adminEmail = "admin@admin.com";
+        String username = "admin";
+        String password = username;
+
+        Usuario admin = usuarioRepo.findByNombre(username).orElseGet(() -> {
+            Usuario newAdmin = new Usuario(
+                username,
+                adminEmail,
+                encoder.encode(password)
             );
-            admin.setRole(Role.ADMIN);
-            return usuarioRepo.save(admin);
+            newAdmin.setRole(Role.ADMIN);
+            return usuarioRepo.save(newAdmin);
         });
+
+        /* Log para confirmar la creación del usuario administrador. */
+        System.out.println("Usuario administrador creado: " + admin.getNombre());
+        System.out.println("Email: " + admin.getEmail());
+        System.out.println("Contraseña: " + password);
     }
 }

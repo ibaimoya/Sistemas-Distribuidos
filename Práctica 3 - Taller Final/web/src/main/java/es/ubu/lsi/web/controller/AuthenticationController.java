@@ -43,6 +43,21 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthenticationController {
 
+    /* Clave para indicar el éxito de la operación. */
+    private static final String SUCCESS_KEY = "success";
+
+    /* Clave para indicar el mensaje de respuesta. */
+    private static final String MESSAGE_KEY = "message";
+
+    /* Clave para almacenar el texto literal de nombre de usuario. */
+    private static final String USERNAME_KEY = "username";
+    
+    /* Clave para indicar si el usuario está autenticado. */
+    private static final String AUTHENTICATED_KEY = "authenticated";
+
+    /* Clave para indicar si el usuario es administrador. */
+    private static final String ADMIN_KEY = "admin";
+
     /** Servicio de autenticación para manejar el registro y login de usuarios. */
     private final AuthService        authService;
 
@@ -63,15 +78,15 @@ public class AuthenticationController {
 
         /* Valida que password y confirm coincidan. */
         if (!request.getPassword().equals(request.getConfirm())) {
-            response.put("success", false);
-            response.put("message", "Las contraseñas no coinciden");
+            response.put(SUCCESS_KEY, false);
+            response.put(MESSAGE_KEY, "Las contraseñas no coinciden");
             return ResponseEntity.badRequest().body(response);
         }
 
         /* Comprueba existencia de usuario o email. */
         if (authService.existeUsuario(request.getUsuario(), request.getEmail())) {
-            response.put("success", false);
-            response.put("message", "El usuario o el correo ya existe");
+            response.put(SUCCESS_KEY, false);
+            response.put(MESSAGE_KEY, "El usuario o el correo ya existe");
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -81,8 +96,8 @@ public class AuthenticationController {
                 request.getEmail(),
                 request.getPassword());
 
-        response.put("success", true);
-        response.put("message", "Cuenta creada correctamente");
+        response.put(SUCCESS_KEY, true);
+        response.put(MESSAGE_KEY, "Cuenta creada correctamente");
         return ResponseEntity.ok(response);
     }
 
@@ -100,8 +115,8 @@ public class AuthenticationController {
 
     /* Comprueba usuario y contraseña. */
     if (!authService.login(request.getUsername(), request.getPassword())) {
-        res.put("success", false);
-        res.put("message", "Credenciales incorrectas");
+        res.put(SUCCESS_KEY, false);
+        res.put(MESSAGE_KEY, "Credenciales incorrectas");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(res);
     }
 
@@ -128,8 +143,8 @@ public class AuthenticationController {
     session.setAttribute("SPRING_SECURITY_CONTEXT",
                          SecurityContextHolder.getContext());
 
-    res.put("success",  true);
-    res.put("username", u.getNombre());
+    res.put(SUCCESS_KEY,  true);
+    res.put(USERNAME_KEY, u.getNombre());
     return ResponseEntity.ok(res);
 }
 
@@ -150,8 +165,8 @@ public class AuthenticationController {
         }
 
         Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("message", "Sesión cerrada");
+        response.put(SUCCESS_KEY, true);
+        response.put(MESSAGE_KEY, "Sesión cerrada");
         return ResponseEntity.ok(response);
     }
 
@@ -173,7 +188,7 @@ public class AuthenticationController {
                         && !"anonymousUser".equals(auth.getPrincipal());
 
         if (!logged) {
-            res.put("authenticated", false);
+            res.put(AUTHENTICATED_KEY, false);
             return ResponseEntity.ok(res);
         }
 
@@ -185,13 +200,13 @@ public class AuthenticationController {
         }
 
         if (u == null) {
-            res.put("authenticated", false);
+            res.put(AUTHENTICATED_KEY, false);
             return ResponseEntity.ok(res);
         }
 
-        res.put("authenticated", true);
-        res.put("username",      u.getNombre());
-        res.put("admin",         u.getRole() == Role.ADMIN);
+        res.put(AUTHENTICATED_KEY, true);
+        res.put(USERNAME_KEY,      u.getNombre());
+        res.put(ADMIN_KEY,         u.getRole() == Role.ADMIN);
         return ResponseEntity.ok(res);
     }
 }

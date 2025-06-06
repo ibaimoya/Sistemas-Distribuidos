@@ -33,6 +33,14 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class MovieController {
+
+    /* Clave para indicar el éxito de la operación. */
+    private static final String SUCCESS_KEY = "success";
+
+    /* Clave para indicar el mensaje de respuesta. */
+    private static final String MESSAGE_KEY = "message";
+    
+    
     /**
      * Clave de API de TMDB para acceder a los datos de películas.
      */
@@ -73,7 +81,7 @@ public class MovieController {
      * @return una lista de películas populares o los resultados de la búsqueda
      */
     @GetMapping("/movies")
-    public ResponseEntity<?> getMovies(
+    public ResponseEntity<Object> getMovies(
             @RequestParam(required = false) String query,
             @RequestParam(defaultValue = "1") int page) {
 
@@ -95,7 +103,7 @@ public class MovieController {
             org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
             headers.setBearerAuth(tmdbAccessToken);
 
-            org.springframework.http.HttpEntity<?> entity = new org.springframework.http.HttpEntity<>(headers);
+            org.springframework.http.HttpEntity<Object> entity = new org.springframework.http.HttpEntity<>(headers);
 
             String finalUrl = buildUrlWithParams(url, params);
             return ResponseEntity.ok(restTemplate.exchange(
@@ -119,14 +127,14 @@ public class MovieController {
      * @return los detalles de la película
      */
     @GetMapping("/movies/{movieId}")
-    public ResponseEntity<?> getMovie(@PathVariable int movieId) {
+    public ResponseEntity<Object> getMovie(@PathVariable int movieId) {
         String url = "https://api.themoviedb.org/3/movie/" + movieId;
 
         if (tmdbAccessToken != null && !tmdbAccessToken.isEmpty()) {
             org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
             headers.setBearerAuth(tmdbAccessToken);
 
-            org.springframework.http.HttpEntity<?> entity = new org.springframework.http.HttpEntity<>(headers);
+            org.springframework.http.HttpEntity<Object> entity = new org.springframework.http.HttpEntity<>(headers);
 
             return ResponseEntity.ok(restTemplate.exchange(
                     url,
@@ -157,8 +165,8 @@ public class MovieController {
         /* Obtiene al usuario autenticado. */
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
-            response.put("success", false);
-            response.put("message", "No autenticado");
+            response.put(SUCCESS_KEY, false);
+            response.put(MESSAGE_KEY, "No autenticado");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
         
@@ -166,8 +174,8 @@ public class MovieController {
         Optional<Usuario> usuarioOpt = usuarioRepository.findByNombre(username);
         
         if (!usuarioOpt.isPresent()) {
-            response.put("success", false);
-            response.put("message", "Usuario no encontrado");
+            response.put(SUCCESS_KEY, false);
+            response.put(MESSAGE_KEY, "Usuario no encontrado");
             return ResponseEntity.badRequest().body(response);
         }
         
@@ -179,8 +187,8 @@ public class MovieController {
         if (favoritoExistente.isPresent()) {
             /* Quita de favoritos. */
             favoritoRepository.deleteByUsuarioAndMovieId(usuario, movieId);
-            response.put("success", true);
-            response.put("message", "Película quitada de favoritos");
+            response.put(SUCCESS_KEY, true);
+            response.put(MESSAGE_KEY, "Película quitada de favoritos");
             response.put("isLiked", false);
         } else {
             /* Obtiene datos de la película de TMDB. */
@@ -191,7 +199,7 @@ public class MovieController {
                 if (tmdbAccessToken != null && !tmdbAccessToken.isEmpty()) {
                     org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
                     headers.setBearerAuth(tmdbAccessToken);
-                    org.springframework.http.HttpEntity<?> entity = new org.springframework.http.HttpEntity<>(headers);
+                    org.springframework.http.HttpEntity<Object> entity = new org.springframework.http.HttpEntity<>(headers);
                     movieData = restTemplate.exchange(movieUrl, org.springframework.http.HttpMethod.GET, entity, Object.class).getBody();
                 } else {
                     movieUrl += "?api_key=" + tmdbApiKey;
@@ -210,13 +218,13 @@ public class MovieController {
                     );
                     
                     favoritoRepository.save(favorito);
-                    response.put("success", true);
-                    response.put("message", "Película agregada a favoritos");
+                    response.put(SUCCESS_KEY, true);
+                    response.put(MESSAGE_KEY, "Película agregada a favoritos");
                     response.put("isLiked", true);
                 }
             } catch (RestClientException e) {
-                response.put("success", false);
-                response.put("message", "Error al obtener datos de la película");
+                response.put(SUCCESS_KEY, false);
+                response.put(MESSAGE_KEY, "Error al obtener datos de la película");
                 return ResponseEntity.badRequest().body(response);
             }
         }
@@ -253,7 +261,7 @@ public class MovieController {
             movie.put("poster_path", fav.getPosterPath());
             movie.put("overview", fav.getOverview());
             return movie;
-        }).collect(java.util.stream.Collectors.toList());
+        }).toList();
         
         Map<String, Object> response = new HashMap<>();
         response.put("results", movies);
@@ -293,7 +301,7 @@ public class MovieController {
      * @return un mapa con la valoración del usuario, si ha valorado, la media y el total de valoraciones
      */
     @GetMapping("/movies/{movieId}/rating")
-    public ResponseEntity<?> getRating(@PathVariable int movieId) {
+    public ResponseEntity<Object> getRating(@PathVariable int movieId) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Usuario usuario = auth != null && auth.isAuthenticated()
@@ -335,7 +343,7 @@ public class MovieController {
      * @return un mapa con el resultado de la operación y las estadísticas de valoración
      */
     @PostMapping("/movies/{movieId}/rate")
-    public ResponseEntity<?> rateMovie(@PathVariable int movieId,
+    public ResponseEntity<Object> rateMovie(@PathVariable int movieId,
                                     @RequestBody Map<String,Integer> body) {
 
         int rating = body.getOrDefault("rating", 0);
