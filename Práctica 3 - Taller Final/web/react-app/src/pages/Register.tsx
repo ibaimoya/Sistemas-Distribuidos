@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function Register() {
   const [show1, setShow1] = useState(false);
@@ -100,40 +101,50 @@ export default function Register() {
             <label htmlFor="password" className="block text-sm font-medium text-white">
               Contraseña
             </label>
-            <input
-              id="password"
-              name="password"
-              type={show1 ? 'text' : 'password'}
-              value={formData.password}
-              onChange={handleChange}
-              required
-              disabled={loading}
-              className="w-full px-3 py-3 border border-white/10 rounded-md bg-white/3 text-white text-[15px] transition-all duration-200 focus:outline-none focus:border-[#1db954] focus:bg-white/5 focus:shadow-[0_0_0_3px_rgba(29,185,84,0.1)]"
-            />
-            <i
-              className={`fas fa-eye${show1 ? '-slash' : ''} absolute right-3 top-[38px] text-gray-400 cursor-pointer hover:text-[#1db954] transition-colors duration-200`}
-              onClick={() => setShow1(!show1)}
-            />
+            <div className="relative">
+              <input
+                id="password"
+                name="password"
+                type={show1 ? 'text' : 'password'}
+                value={formData.password}
+                onChange={handleChange}
+                required
+                disabled={loading}
+                className="w-full px-3 py-3 border border-white/10 rounded-md bg-white/3 text-white text-[15px] transition-all duration-200 focus:outline-none focus:border-[#1db954] focus:bg-white/5 focus:shadow-[0_0_0_3px_rgba(29,185,84,0.1)]"
+              />
+              <button
+                type="button"
+                onClick={() => setShow1(!show1)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#1db954] transition-colors duration-200"
+              >
+                {show1 ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
           </div>
 
           <div className="space-y-2 relative">
             <label htmlFor="confirm" className="block text-sm font-medium text-white">
               Confirmar contraseña
             </label>
-            <input
-              id="confirm"
-              name="confirm"
-              type={show2 ? 'text' : 'password'}
-              value={formData.confirm}
-              onChange={handleChange}
-              required
-              disabled={loading}
-              className="w-full px-3 py-3 border border-white/10 rounded-md bg-white/3 text-white text-[15px] transition-all duration-200 focus:outline-none focus:border-[#1db954] focus:bg-white/5 focus:shadow-[0_0_0_3px_rgba(29,185,84,0.1)]"
-            />
-            <i
-              className={`fas fa-eye${show2 ? '-slash' : ''} absolute right-3 top-[38px] text-gray-400 cursor-pointer hover:text-[#1db954] transition-colors duration-200`}
-              onClick={() => setShow2(!show2)}
-            />
+            <div className="relative">
+              <input
+                id="confirm"
+                name="confirm"
+                type={show2 ? 'text' : 'password'}
+                value={formData.confirm}
+                onChange={handleChange}
+                required
+                disabled={loading}
+                className="w-full px-3 py-3 border border-white/10 rounded-md bg-white/3 text-white text-[15px] transition-all duration-200 focus:outline-none focus:border-[#1db954] focus:bg-white/5 focus:shadow-[0_0_0_3px_rgba(29,185,84,0.1)]"
+              />
+              <button
+                type="button"
+                onClick={() => setShow2(!show2)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#1db954] transition-colors duration-200"
+              >
+                {show2 ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
           </div>
 
           <button

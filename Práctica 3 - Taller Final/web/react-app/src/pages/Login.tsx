@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function Login() {
   const [show, setShow] = useState(false);
@@ -76,20 +77,25 @@ export default function Login() {
             <label htmlFor="password" className="block text-sm font-medium text-white">
               Contraseña
             </label>
-            <input
-              id="password"
-              name="password"
-              type={show ? 'text' : 'password'}
-              value={formData.password}
-              onChange={handleChange}
-              required
-              disabled={loading}
-              className="w-full px-3 py-3 border border-white/10 rounded-md bg-white/3 text-white text-[15px] transition-all duration-200 focus:outline-none focus:border-[#1db954] focus:bg-white/5 focus:shadow-[0_0_0_3px_rgba(29,185,84,0.1)]"
-            />
-            <i
-              className={`fas fa-eye${show ? '-slash' : ''} absolute right-3 top-[38px] text-gray-400 cursor-pointer hover:text-[#1db954] transition-colors duration-200`}
-              onClick={() => setShow(!show)}
-            />
+            <div className="relative">
+              <input
+                id="password"
+                name="password"
+                type={show ? 'text' : 'password'}
+                value={formData.password}
+                onChange={handleChange}
+                required
+                disabled={loading}
+                className="w-full px-3 py-3 border border-white/10 rounded-md bg-white/3 text-white text-[15px] transition-all duration-200 focus:outline-none focus:border-[#1db954] focus:bg-white/5 focus:shadow-[0_0_0_3px_rgba(29,185,84,0.1)]"
+              />
+              <button
+                type="button"
+                onClick={() => setShow(!show)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#1db954] transition-colors duration-200"
+              >
+                {show ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
           </div>
 
           <button
