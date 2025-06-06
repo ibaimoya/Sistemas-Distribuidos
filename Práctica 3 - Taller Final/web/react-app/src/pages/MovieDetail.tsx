@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Star, ArrowLeft, Clock, Calendar, Heart, X, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Map from "../components/Map";
+import { COUNTRY_COORDS } from "../constants/countryCoords";
 
 interface Movie {
   id: number;
@@ -38,6 +40,8 @@ const MovieDetail: React.FC = () => {
   });
   const [isRatingLoading, setIsRatingLoading] = useState(false);
   const [ratingMessage, setRatingMessage] = useState<string>('');
+  const iso = movie?.production_countries?.[0]?.iso_3166_1;
+  const coords = COUNTRY_COORDS[iso ?? ""] ?? { lat: 20, lng: 0 };
 
   useEffect(() => {
     fetchMovieDetails();
@@ -445,6 +449,12 @@ const MovieDetail: React.FC = () => {
                     <span className="text-gray-400 ml-2">/ 10</span>
                   </div>
                 </div>
+                  {iso && (
+                    <div className="bg-[#1a1a1a] rounded-lg p-6 mt-8">
+                      <h2 className="text-xl font-semibold mb-4">Dónde se produjo</h2>
+                      <Map center={coords} height={250} />
+                    </div>
+                  )}
               </motion.div>
             </div>
           </div>

@@ -46,6 +46,7 @@ public class SecurityConfig {
      * @throws Exception si ocurre un error al configurar la seguridad
      */
     @Bean
+    @SuppressWarnings("unused")
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
