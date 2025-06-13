@@ -155,7 +155,7 @@ const Landing = () => {
           >
             Descubre un universo de historias infinitas. 
             <span className="block mt-2 text-[#abedc2]">
-              Tu próxima aventura te espera.
+              Tu próxima aventura te espera...
             </span>
           </motion.p>
         </div>
