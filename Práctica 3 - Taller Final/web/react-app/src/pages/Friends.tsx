@@ -11,7 +11,8 @@ import {
   MessageCircle,
   Trash2,
   Send,
-  X
+  X,
+  Bell
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -36,6 +37,7 @@ interface SentRequest {
 const Friends: React.FC = () => {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [sentRequests, setSentRequests] = useState<SentRequest[]>([]);
+  const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [searchUsername, setSearchUsername] = useState('');
   const [showAddFriend, setShowAddFriend] = useState(false);
@@ -46,6 +48,7 @@ const Friends: React.FC = () => {
   useEffect(() => {
     fetchFriends();
     fetchSentRequests();
+    fetchPendingRequestsCount();
   }, []);
 
   const fetchFriends = async () => {
@@ -71,6 +74,18 @@ const Friends: React.FC = () => {
       setSentRequests(data.requests || []);
     } catch (error) {
       console.error('Error fetching sent requests:', error);
+    }
+  };
+
+  const fetchPendingRequestsCount = async () => {
+    try {
+      const response = await fetch('/api/friends/requests/count', {
+        credentials: 'include'
+      });
+      const data = await response.json();
+      setPendingRequestsCount(data.count || 0);
+    } catch (error) {
+      console.error('Error fetching pending requests count:', error);
     }
   };
 
@@ -100,11 +115,6 @@ const Friends: React.FC = () => {
         setSearchUsername('');
         setShowAddFriend(false);
         fetchSentRequests();
-        
-        // Efecto de sonido de éxito
-        const audio = new Audio();
-        audio.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLYiDYIG2m98OScTgwOUavi8LNmFAs';
-        audio.play().catch(() => {});
       } else {
         setMessage({ type: 'error', text: data.message });
       }
@@ -228,6 +238,11 @@ const Friends: React.FC = () => {
               <span className="flex items-center space-x-2">
                 <Users size={18} />
                 <span>Amigos ({friends.length})</span>
+                {pendingRequestsCount > 0 && (
+                  <span className="ml-2 bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
+                    {pendingRequestsCount} pendientes
+                  </span>
+                )}
               </span>
             </button>
             <button
@@ -259,6 +274,27 @@ const Friends: React.FC = () => {
               {/* Lista de amigos */}
               {activeTab === 'friends' && (
                 <div>
+                  {pendingRequestsCount > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mb-6 p-4 bg-[#1db954]/20 border border-[#1db954]/50 rounded-lg flex items-center justify-between"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <Bell size={20} className="text-[#1db954]" />
+                        <p className="text-[#1db954]">
+                          Tienes {pendingRequestsCount} {pendingRequestsCount === 1 ? 'solicitud pendiente' : 'solicitudes pendientes'} de amistad
+                        </p>
+                      </div>
+                      <Link
+                        to="/"
+                        className="text-sm text-[#1db954] hover:text-[#1ed760] underline"
+                      >
+                        Ver en notificaciones
+                      </Link>
+                    </motion.div>
+                  )}
+
                   {friends.length === 0 ? (
                     <div className="text-center py-16">
                       <Users size={64} className="mx-auto text-gray-600 mb-4" />
@@ -289,7 +325,7 @@ const Friends: React.FC = () => {
                           </div>
 
                           <p className="text-xs text-gray-500 mb-4">
-                            Amigos desde {new Date(friend.fechaAmistad).toLocaleDateString()}
+                            Amigos desde el {new Date(friend.fechaAmistad).toLocaleDateString()}.
                           </p>
 
                           <div className="flex space-x-2">
