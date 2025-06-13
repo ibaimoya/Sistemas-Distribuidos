@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, Heart, User, X, Shield } from 'lucide-react';
+import { LogOut, Heart, User, X, Shield, Users, Bell, UserPlus, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -10,8 +10,17 @@ interface Movie {
   overview: string;
 }
 
-const Home: React.FC = () => {
+interface FriendRequest {
+  id: number;
+  remitente: {
+    id: number;
+    nombre: string;
+    email: string;
+  };
+  fecha: string;
+}
 
+const Home: React.FC = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -27,13 +36,26 @@ const Home: React.FC = () => {
   const [feedbackType, setFeedbackType] = useState<'add' | 'remove' | null>(null);  
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
-
+  
+  // Sistema de notificaciones
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
+  const [loadingRequests, setLoadingRequests] = useState(false);
 
   useEffect(() => {
     checkAuth();
     fetchMovies();
     loadUserFavorites();
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchNotificationCount();
+      const interval = setInterval(fetchNotificationCount, 30000); // Cada 30 segundos
+      return () => clearInterval(interval);
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -67,6 +89,78 @@ const Home: React.FC = () => {
       } 
     } catch (error) {
       console.error('Error checking auth:', error);
+    }
+  };
+
+  const fetchNotificationCount = async () => {
+    try {
+      const response = await fetch('/api/friends/requests/count', {
+        credentials: 'include'
+      });
+      const data = await response.json();
+      setNotificationCount(data.count || 0);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
+  };
+
+  const fetchFriendRequests = async () => {
+    setLoadingRequests(true);
+    try {
+      const response = await fetch('/api/friends/requests/pending', {
+        credentials: 'include'
+      });
+      const data = await response.json();
+      setFriendRequests(data.requests || []);
+    } catch (error) {
+      console.error('Error fetching friend requests:', error);
+    } finally {
+      setLoadingRequests(false);
+    }
+  };
+
+  const handleAcceptRequest = async (requestId: number) => {
+    try {
+      const response = await fetch(`/api/friends/requests/${requestId}/accept`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        // Actualizar la lista y el contador
+        setFriendRequests(prev => prev.filter(r => r.id !== requestId));
+        setNotificationCount(prev => Math.max(0, prev - 1));
+        
+        // Mostrar feedback visual
+        const audio = new Audio();
+        audio.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLYiDYIG2m98OScTgwOUavi8LNmFAs';
+        audio.play().catch(() => {});
+      }
+    } catch (error) {
+      console.error('Error accepting request:', error);
+    }
+  };
+
+  const handleRejectRequest = async (requestId: number) => {
+    try {
+      const response = await fetch(`/api/friends/requests/${requestId}/reject`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        setFriendRequests(prev => prev.filter(r => r.id !== requestId));
+        setNotificationCount(prev => Math.max(0, prev - 1));
+      }
+    } catch (error) {
+      console.error('Error rejecting request:', error);
+    }
+  };
+
+  const handleNotificationClick = () => {
+    setShowNotifications(!showNotifications);
+    if (!showNotifications && notificationCount > 0) {
+      fetchFriendRequests();
     }
   };
 
@@ -177,10 +271,8 @@ const Home: React.FC = () => {
       if (data.success) {
         const isAdding = data.isLiked;
         
-        // Primero mostrar la animación
         showFeedback(movieId, isAdding ? 'add' : 'remove');
         
-        // Después de un pequeño delay, cambiar el estado
         setTimeout(() => {
           if (isAdding) {
             setLikedMovies(prev => new Set([...prev, movieId]));
@@ -191,7 +283,7 @@ const Home: React.FC = () => {
               return newSet;
             });
           }
-        }, 600); // Cambiar estado a mitad de la animación
+        }, 600);
       }
       
       if (response.status === 401) {
@@ -219,52 +311,144 @@ const Home: React.FC = () => {
       {/* Header */}
       <header className="fixed w-full z-50 flex justify-between items-center px-8 py-4 bg-gradient-to-b from-black/80 to-transparent">
         <h1 className="text-3xl font-bold text-[#1db954] transition-transform duration-300 hover:scale-105 cursor-pointer">Kinora</h1>
-        <div className="relative">
-          <button
-            className="flex items-center space-x-2 hover:text-[#1db954] transition-colors"
-            onMouseEnter={() => setShowUserMenu(true)}
-            onMouseLeave={() => setShowUserMenu(false)}
-          >
-            <User size={24} />
-            <span>{username}</span>
-          </button>
-
-          <AnimatePresence>
-            {showUserMenu && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="absolute right-0 mt-2 w-48 bg-[#1a1a1a] rounded-md shadow-lg py-1"
-                onMouseEnter={() => setShowUserMenu(true)}
-                onMouseLeave={() => setShowUserMenu(false)}
-              >
-                <Link
-                  to="/my-movies"
-                  className="flex items-center w-full px-4 py-2 text-sm hover:bg-[#1db954] hover:text-white transition-colors"
+        <div className="flex items-center space-x-4">
+          {/* Notificaciones */}
+          <div className="relative">
+            <button
+              onClick={handleNotificationClick}
+              className="relative p-2 hover:bg-white/10 rounded-full transition-colors"
+            >
+              <Bell size={24} className={notificationCount > 0 ? 'text-[#1db954]' : 'text-white'} />
+              {notificationCount > 0 && (
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
                 >
-                  <Heart size={16} className="mr-2" />
-                  Mis Películas
-                </Link>
-                {isAdmin && (
+                  {notificationCount}
+                </motion.span>
+              )}
+            </button>
+
+            <AnimatePresence>
+              {showNotifications && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute right-0 mt-2 w-80 bg-[#1a1a1a] rounded-lg shadow-xl py-2 max-h-96 overflow-y-auto"
+                  onMouseLeave={() => setShowNotifications(false)}
+                >
+                  <div className="px-4 py-2 border-b border-white/10">
+                    <h3 className="font-semibold flex items-center">
+                      <UserPlus size={18} className="mr-2 text-[#1db954]" />
+                      Solicitudes de amistad
+                    </h3>
+                  </div>
+                  
+                  {loadingRequests ? (
+                    <div className="p-4 text-center">
+                      <div className="w-6 h-6 border-2 border-[#1db954] border-t-transparent rounded-full animate-spin mx-auto"></div>
+                    </div>
+                  ) : friendRequests.length === 0 ? (
+                    <div className="p-4 text-center text-gray-400">
+                      No tienes solicitudes pendientes
+                    </div>
+                  ) : (
+                    <div className="py-2">
+                      {friendRequests.map((request) => (
+                        <motion.div
+                          key={request.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          className="px-4 py-3 hover:bg-white/5 transition-colors"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <p className="font-medium">{request.remitente.nombre}</p>
+                              <p className="text-sm text-gray-400">
+                                {new Date(request.fecha).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => handleAcceptRequest(request.id)}
+                                className="p-2 bg-[#1db954] hover:bg-[#1ed760] rounded-full transition-colors"
+                              >
+                                <Check size={16} />
+                              </button>
+                              <button
+                                onClick={() => handleRejectRequest(request.id)}
+                                className="p-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-full transition-colors"
+                              >
+                                <X size={16} />
+                              </button>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Menu de usuario */}
+          <div className="relative">
+            <button
+              className="flex items-center space-x-2 hover:text-[#1db954] transition-colors"
+              onMouseEnter={() => setShowUserMenu(true)}
+              onMouseLeave={() => setShowUserMenu(false)}
+            >
+              <User size={24} />
+              <span>{username}</span>
+            </button>
+
+            <AnimatePresence>
+              {showUserMenu && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute right-0 mt-2 w-48 bg-[#1a1a1a] rounded-md shadow-lg py-1"
+                  onMouseEnter={() => setShowUserMenu(true)}
+                  onMouseLeave={() => setShowUserMenu(false)}
+                >
                   <Link
-                    to="/admin"
+                    to="/friends"
                     className="flex items-center w-full px-4 py-2 text-sm hover:bg-[#1db954] hover:text-white transition-colors"
                   >
-                    <Shield size={16} className="mr-2" />
-                    Panel admin
+                    <Users size={16} className="mr-2" />
+                    Amigos
                   </Link>
-                )}
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center w-full px-4 py-2 text-sm hover:bg-[#1db954] hover:text-white transition-colors"
-                >
-                  <LogOut size={16} className="mr-2" />
-                  Cerrar sesión
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                  <Link
+                    to="/my-movies"
+                    className="flex items-center w-full px-4 py-2 text-sm hover:bg-[#1db954] hover:text-white transition-colors"
+                  >
+                    <Heart size={16} className="mr-2" />
+                    Mis Películas
+                  </Link>
+                  {isAdmin && (
+                    <Link
+                      to="/admin"
+                      className="flex items-center w-full px-4 py-2 text-sm hover:bg-[#1db954] hover:text-white transition-colors"
+                    >
+                      <Shield size={16} className="mr-2" />
+                      Panel admin
+                    </Link>
+                  )}
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center w-full px-4 py-2 text-sm hover:bg-[#1db954] hover:text-white transition-colors"
+                  >
+                    <LogOut size={16} className="mr-2" />
+                    Cerrar sesión
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </header>
 
@@ -355,7 +539,6 @@ const Home: React.FC = () => {
                       >
                         <div className="relative">
                           {likedMovies.has(movie.id) ? (
-                            // Corazón rojo tachado cuando está en favoritos
                             <>
                               <Heart 
                                 size={24} 
@@ -368,7 +551,6 @@ const Home: React.FC = () => {
                               />
                             </>
                           ) : (
-                            // Corazón outline verde cuando no está en favoritos
                             <Heart 
                               size={24} 
                               fill="none"
@@ -377,11 +559,9 @@ const Home: React.FC = () => {
                           )}
                         </div>
                         
-                        {/* Efecto de explosión cuando se agrega */}
                         <AnimatePresence>
                           {animatingMovie === movie.id && feedbackType === 'add' && (
                             <>
-                              {/* Onda de confirmación */}
                               <motion.div
                                 className="absolute top-1/2 left-1/2 border-4 border-red-400 rounded-full"
                                 style={{
@@ -395,7 +575,6 @@ const Home: React.FC = () => {
                                 transition={{ duration: 1.0, ease: "easeOut" }}
                               />
                               
-                              {/* Partículas en forma de corazón */}
                               {[...Array(8)].map((_, i) => (
                                 <motion.div
                                   key={i}
@@ -425,11 +604,9 @@ const Home: React.FC = () => {
                           )}
                         </AnimatePresence>
                         
-                        {/* Efecto cuando se elimina */}
                         <AnimatePresence>
                           {animatingMovie === movie.id && feedbackType === 'remove' && (
                             <>
-                              {/* Ondas de eliminación */}
                               {[...Array(4)].map((_, i) => (
                                 <motion.div
                                   key={`wave-${i}`}
@@ -453,7 +630,6 @@ const Home: React.FC = () => {
                                 />
                               ))}
                               
-                              {/* X grande flotante */}
                               <motion.div
                                 className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
                                 initial={{ opacity: 0, scale: 0 }}
@@ -474,7 +650,6 @@ const Home: React.FC = () => {
           ))}
         </div>
 
-        {/* Loading indicator */}
         {loading && (
           <div className="flex justify-center py-8">
             <div className="flex space-x-2">

@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import MyMovies from './pages/MyMovies';
 import AdminPanel from './pages/AdminPanel';
+import Friends from './pages/Friends';
 
 const App: React.FC = () => {
   return (
@@ -57,6 +58,14 @@ const App: React.FC = () => {
         element={
           <ProtectedRoute>
             <MyMovies />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/friends" 
+        element={
+          <ProtectedRoute>
+            <Friends />
           </ProtectedRoute>
         } 
       />
