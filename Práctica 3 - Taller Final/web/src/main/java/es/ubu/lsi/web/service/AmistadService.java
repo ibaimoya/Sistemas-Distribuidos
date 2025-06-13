@@ -39,22 +39,32 @@ public class AmistadService {
      */
     @Transactional
     public SolicitudAmistad enviarSolicitud(Usuario remitente, Usuario destinatario) {
-        // Verificar que no se envíe a sí mismo
+
+        /* Verificar que no se envíe a sí mismo. */
         if (remitente.getId().equals(destinatario.getId())) {
             throw new IllegalArgumentException("No puedes enviarte una solicitud a ti mismo");
         }
 
-        // Verificar si ya son amigos
+        /* Verificar si ya son amigos. */
         if (amistadRepository.sonAmigos(remitente, destinatario)) {
             throw new IllegalStateException("Ya sois amigos");
         }
 
-        // Verificar si ya existe una solicitud pendiente
+        /* Verificar si ya existe una solicitud pendiente. */
         if (solicitudRepository.existeSolicitudPendiente(remitente, destinatario)) {
             throw new IllegalStateException("Ya existe una solicitud pendiente");
         }
 
-        // Crear nueva solicitud
+        /* Verificar si existe una solicitud rechazada previa y eliminarla. */
+        Optional<SolicitudAmistad> solicitudRechazada = solicitudRepository
+            .findByRemitenteAndDestinatario(remitente, destinatario);
+        
+        if (solicitudRechazada.isPresent() && 
+            solicitudRechazada.get().getEstado() == EstadoSolicitud.RECHAZADA) {
+            solicitudRepository.delete(solicitudRechazada.get());
+        }
+
+        /* Crear nueva solicitud. */
         SolicitudAmistad solicitud = new SolicitudAmistad(remitente, destinatario);
         return solicitudRepository.save(solicitud);
     }
@@ -71,22 +81,22 @@ public class AmistadService {
         SolicitudAmistad solicitud = solicitudRepository.findById(solicitudId)
             .orElseThrow(() -> new IllegalArgumentException("Solicitud no encontrada"));
 
-        // Verificar que el usuario sea el destinatario
+        /* Verificar que el usuario sea el destinatario. */
         if (!solicitud.getDestinatario().getId().equals(usuario.getId())) {
             throw new IllegalArgumentException("No tienes permiso para aceptar esta solicitud");
         }
 
-        // Verificar que esté pendiente
+        /* Verificar que esté pendiente. */
         if (solicitud.getEstado() != EstadoSolicitud.PENDIENTE) {
             throw new IllegalStateException("La solicitud ya fue procesada");
         }
 
-        // Actualizar solicitud
+        /* Actualizar solicitud. */
         solicitud.setEstado(EstadoSolicitud.ACEPTADA);
         solicitud.setFechaRespuesta(LocalDateTime.now());
         solicitudRepository.save(solicitud);
 
-        // Crear relaciones de amistad bidireccionales
+        /* Crear relaciones de amistad bidireccionales. */
         Amistad amistad1 = new Amistad(solicitud.getRemitente(), solicitud.getDestinatario());
         Amistad amistad2 = new Amistad(solicitud.getDestinatario(), solicitud.getRemitente());
         
@@ -105,17 +115,17 @@ public class AmistadService {
         SolicitudAmistad solicitud = solicitudRepository.findById(solicitudId)
             .orElseThrow(() -> new IllegalArgumentException("Solicitud no encontrada"));
 
-        // Verificar que el usuario sea el destinatario
+        /* Verificar que el usuario sea el destinatario. */
         if (!solicitud.getDestinatario().getId().equals(usuario.getId())) {
             throw new IllegalArgumentException("No tienes permiso para rechazar esta solicitud");
         }
 
-        // Verificar que esté pendiente
+        /* Verificar que esté pendiente. */
         if (solicitud.getEstado() != EstadoSolicitud.PENDIENTE) {
             throw new IllegalStateException("La solicitud ya fue procesada");
         }
 
-        // Actualizar solicitud
+        /* Actualizar solicitud. */
         solicitud.setEstado(EstadoSolicitud.RECHAZADA);
         solicitud.setFechaRespuesta(LocalDateTime.now());
         solicitudRepository.save(solicitud);
@@ -132,12 +142,12 @@ public class AmistadService {
         SolicitudAmistad solicitud = solicitudRepository.findById(solicitudId)
             .orElseThrow(() -> new IllegalArgumentException("Solicitud no encontrada"));
 
-        // Verificar que el usuario sea el remitente
+        /* Verificar que el usuario sea el remitente. */
         if (!solicitud.getRemitente().getId().equals(usuario.getId())) {
             throw new IllegalArgumentException("No tienes permiso para cancelar esta solicitud");
         }
 
-        // Verificar que esté pendiente
+        /* Verificar que esté pendiente. */
         if (solicitud.getEstado() != EstadoSolicitud.PENDIENTE) {
             throw new IllegalStateException("La solicitud ya fue procesada");
         }
@@ -160,9 +170,19 @@ public class AmistadService {
 
         if (amistad.isPresent()) {
             Usuario amigo = amistad.get().getAmigo();
-            // Eliminar ambas direcciones
+
+            /* Eliminar ambas direcciones. */
             amistadRepository.deleteByUsuarioAndAmigo(usuario, amigo);
             amistadRepository.deleteByUsuarioAndAmigo(amigo, usuario);
+
+            /* También eliminar cualquier solicitud existente entre ellos. */
+            Optional<SolicitudAmistad> solicitud1 = solicitudRepository
+                .findByRemitenteAndDestinatario(usuario, amigo);
+            Optional<SolicitudAmistad> solicitud2 = solicitudRepository
+                .findByRemitenteAndDestinatario(amigo, usuario);
+            
+            solicitud1.ifPresent(solicitudRepository::delete);
+            solicitud2.ifPresent(solicitudRepository::delete);
         }
     }
 
