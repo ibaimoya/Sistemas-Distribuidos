@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Star, ArrowLeft, Clock, Calendar, Heart, X, Users } from 'lucide-react';
+import { Star, ArrowLeft, Clock, Calendar, Heart, X, Users, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Map from "../components/Map";
 import { COUNTRY_COORDS } from "../constants/countryCoords";
+
 
 interface Movie {
   id: number;
@@ -42,6 +43,8 @@ const MovieDetail: React.FC = () => {
   const [ratingMessage, setRatingMessage] = useState<string>('');
   const iso = movie?.production_countries?.[0]?.iso_3166_1;
   const coords = COUNTRY_COORDS[iso ?? ""] ?? { lat: 20, lng: 0 };
+
+  const [blockHash, setBlockHash] = useState<string>('');
 
   useEffect(() => {
     fetchMovieDetails();
@@ -117,6 +120,11 @@ const MovieDetail: React.FC = () => {
           totalRatings: data.totalRatings
         });
         
+        // Guardar el hash del bloque
+        if (data.blockHash) {
+          setBlockHash(data.blockHash);
+        }
+        
         // Mostrar mensaje de confirmación
         if (data.action === 'updated') {
           setRatingMessage('¡Valoración actualizada!');
@@ -124,8 +132,8 @@ const MovieDetail: React.FC = () => {
           setRatingMessage('¡Valoración guardada!');
         }
         
-        // Limpiar mensaje después de 3 segundos
-        setTimeout(() => setRatingMessage(''), 3000);
+        // Limpiar mensaje después de 5 segundos para que se vea el hash
+        setTimeout(() => setRatingMessage(''), 5000);
       } else {
         setRatingMessage('Error al guardar valoración');
         setTimeout(() => setRatingMessage(''), 3000);
@@ -152,7 +160,7 @@ const MovieDetail: React.FC = () => {
         const newLikeState = !isLiked;
         setAnimatingLike(true);
         setFeedbackType(newLikeState ? 'add' : 'remove');
-                
+
         setTimeout(() => {
           setIsLiked(newLikeState);
           setAnimatingLike(false);
@@ -373,7 +381,7 @@ const MovieDetail: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Message de confirmación */}
+                  {/* Mensaje de confirmación */}
                   <AnimatePresence>
                     {ratingMessage && (
                       <motion.div
@@ -388,6 +396,23 @@ const MovieDetail: React.FC = () => {
                       </motion.div>
                     )}
                   </AnimatePresence>
+
+                  {/* Mostrar hash del bloque si existe */}
+                  {blockHash && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-4 p-3 bg-[#1db954]/10 rounded-lg border border-[#1db954]/20"
+                    >
+                      <div className="flex items-center space-x-2 mb-1">
+                        <Shield size={16} className="text-[#1db954]" />
+                        <span className="text-xs font-semibold text-[#1db954]">Registrado en Blockchain</span>
+                      </div>
+                      <p className="text-xs text-gray-400 break-all font-mono">
+                        Hash: {blockHash.substring(0, 32)}...
+                      </p>
+                    </motion.div>
+                  )}
                 </div>
 
                 {/* Community Rating */}

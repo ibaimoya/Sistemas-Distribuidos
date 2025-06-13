@@ -9,6 +9,7 @@ import Register from './pages/Register';
 import MyMovies from './pages/MyMovies';
 import AdminPanel from './pages/AdminPanel';
 import Friends from './pages/Friends';
+import BlockchainExplorer from './pages/BlockchainExplorer';
 
 const App: React.FC = () => {
   return (
@@ -68,6 +69,14 @@ const App: React.FC = () => {
             <Friends />
           </ProtectedRoute>
         } 
+      />
+      <Route 
+        path="/blockchain" 
+        element={
+          <ProtectedRoute>
+            <BlockchainExplorer />
+          </ProtectedRoute>
+        }
       />
       <Route
         path="/admin"

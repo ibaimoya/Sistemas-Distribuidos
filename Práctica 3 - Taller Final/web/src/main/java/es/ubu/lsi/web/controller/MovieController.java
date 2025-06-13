@@ -26,9 +26,20 @@ import es.ubu.lsi.web.entity.Valoracion;
 import es.ubu.lsi.web.repository.FavoritoRepository;
 import es.ubu.lsi.web.repository.UsuarioRepository;
 import es.ubu.lsi.web.repository.ValoracionRepository;
+import es.ubu.lsi.web.service.BlockchainService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Controlador REST para gestionar las operaciones relacionadas con películas.
+ * Permite obtener películas populares, buscar por consulta, gestionar favoritos y valoraciones.
+ * Utiliza la API de TMDB para obtener datos de películas.
+ * 
+ * @author Ibai Moya Aroz
+ * 
+ * @version 1.0
+ * @since 1.0
+ */
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -71,7 +82,10 @@ public class MovieController {
 
     /** Repositorio para acceder a las valoraciones de las películas. */
     private final ValoracionRepository valoracionRepository;
-
+    
+    /** Servicio de blockchain para registrar valoraciones. */
+    private final BlockchainService blockchainService;
+    
     /**
      * Obtiene una lista de películas populares o busca películas por consulta.
      * Si se proporciona un token de acceso, se usa para autenticación; de lo contrario, se usa la clave de API.
@@ -337,6 +351,7 @@ public class MovieController {
      * Permite al usuario valorar una película.
      * Si ya ha valorado, actualiza la valoración; si no, crea una nueva.
      * Devuelve la media y el total de valoraciones de la película.
+     * También registra la valoración en la blockchain.
      *
      * @param movieId el ID de la película a valorar
      * @param body    el cuerpo de la solicitud con la valoración (rating)
@@ -362,17 +377,28 @@ public class MovieController {
 
         /* Inserta o actualiza la valoración. */
         String action;
+        Valoracion valoracion;
         Optional<Valoracion> existente =
             valoracionRepository.findByUsuarioAndMovieId(usuario, movieId);
 
         if (existente.isPresent()) {
-            existente.get().setRating(rating);
-            valoracionRepository.save(existente.get());
+            valoracion = existente.get();
+            valoracion.setRating(rating);
             action = "updated";
         } else {
-            valoracionRepository.save(new Valoracion(usuario, movieId, rating));
+            valoracion = new Valoracion(usuario, movieId, rating);
             action = "created";
         }
+        
+        /* Registrar en blockchain */
+        Map<String, Object> blockInfo = blockchainService.addRatingToBlockchain(
+            usuario.getId(), movieId, rating
+        );
+        
+        /* Guardar información del bloque en la valoración */
+        valoracion.setBlockHash((String) blockInfo.get("blockHash"));
+        valoracion.setBlockIndex((Integer) blockInfo.get("blockIndex"));
+        valoracionRepository.save(valoracion);
 
         /* Calcula la media y el total. */
         double average = valoracionRepository.findByMovieId(movieId)
@@ -384,6 +410,8 @@ public class MovieController {
         res.put("action",  action);
         res.put("averageRating", Math.round(average * 10) / 10.0);
         res.put("totalRatings",  total);
+        res.put("blockHash", blockInfo.get("blockHash"));
+        res.put("blockIndex", blockInfo.get("blockIndex"));
 
         return ResponseEntity.ok(res);
     }

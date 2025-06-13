@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requireAuth?: boolean;
   redirectTo?: string;
+  adminOnly?: boolean;
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
   children, 
   requireAuth = true, 
-  redirectTo 
+  redirectTo,
+  adminOnly = false
 }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -21,25 +25,19 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         });
         const data = await response.json();
         
-        if (requireAuth && !data.authenticated) {
-          window.location.href = redirectTo || '/welcome';
-        } else if (!requireAuth && data.authenticated) {
-          window.location.href = '/';
-        } else {
-          setIsAuthenticated(data.authenticated);
-        }
+        setIsAuthenticated(data.authenticated);
+        setIsAdmin(data.admin || false);
+        
       } catch (error) {
-        if (requireAuth) {
-          window.location.href = redirectTo || '/welcome';
-        } else {
-          setIsAuthenticated(false);
-        }
+        setIsAuthenticated(false);
+        setIsAdmin(false);
       }
     };
 
     checkAuth();
-  }, [requireAuth, redirectTo]);
+  }, []);
 
+  // Mientras se verifica la autenticación
   if (isAuthenticated === null) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -51,6 +49,21 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         </div>
       </div>
     );  
+  }
+
+  // Si requiere autenticación y no está autenticado
+  if (requireAuth && !isAuthenticated) {
+    return <Navigate to={redirectTo || '/welcome'} replace />;
+  }
+
+  // Si NO requiere autenticación (login/register) pero está autenticado
+  if (!requireAuth && isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+
+  // Si es solo para admin y no es admin
+  if (adminOnly && !isAdmin) {
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;

@@ -14,8 +14,10 @@ import lombok.Setter;
 /**
  * Clase que representa una valoración de una película por un usuario.
  * Una valoración incluye el ID del usuario, el ID de la película y la puntuación dada.
+ * También incluye información del bloque de blockchain donde se ha registrado.
  * 
  * @author Ibai Moya Aroz
+ * 
  * @version 1.0
  * @since 1.0
  */
@@ -54,6 +56,19 @@ public class Valoracion {
      */
     @Column(nullable = false)
     private Integer rating;
+    
+    /**
+     * Hash del bloque de blockchain donde se ha registrado esta valoración.
+     * Permite verificar la integridad de la valoración.
+     */
+    @Column(length = 64)
+    private String blockHash;
+    
+    /**
+     * Índice del bloque en la blockchain.
+     */
+    @Column
+    private Integer blockIndex;
 
     /**
      * Constructor para crear una nueva valoración.

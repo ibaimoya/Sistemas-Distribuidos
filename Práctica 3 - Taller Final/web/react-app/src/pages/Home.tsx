@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, Heart, User, X, Shield, Users, Bell, UserPlus, Check } from 'lucide-react';
+import { LogOut, Heart, User, X, Shield, Users, Bell, UserPlus, Check, Link as LinkIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -384,18 +384,18 @@ const Home: React.FC = () => {
                   onMouseLeave={() => setShowUserMenu(false)}
                 >
                   <Link
-                    to="/friends"
-                    className="flex items-center w-full px-4 py-2 text-sm hover:bg-[#1db954] hover:text-white transition-colors"
-                  >
-                    <Users size={16} className="mr-2" />
-                    Amigos
-                  </Link>
-                  <Link
                     to="/my-movies"
                     className="flex items-center w-full px-4 py-2 text-sm hover:bg-[#1db954] hover:text-white transition-colors"
                   >
                     <Heart size={16} className="mr-2" />
                     Mis Películas
+                  </Link>
+                  <Link
+                    to="/blockchain"
+                    className="flex items-center w-full px-4 py-2 text-sm hover:bg-[#1db954] hover:text-white transition-colors"
+                  >
+                    <LinkIcon size={16} className="mr-2" />
+                    Blockchain
                   </Link>
                   {isAdmin && (
                     <Link
