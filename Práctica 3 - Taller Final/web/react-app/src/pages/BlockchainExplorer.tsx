@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Shield, Hash, Clock, Link as LinkIcon, CheckCircle, XCircle, RefreshCw, X } from 'lucide-react';
+import { ArrowLeft, Shield, Hash, Clock, Link as LinkIcon, CheckCircle, XCircle, RefreshCw, X, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -26,20 +26,40 @@ export default function BlockchainExplorer() {
   const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
   const [validating, setValidating] = useState(false);
   const [validationResult, setValidationResult] = useState<{ valid: boolean; message: string } | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    checkAuth();
     loadBlockchainData();
   }, []);
 
+  const checkAuth = async () => {
+    try {
+      const response = await fetch('/auth/check', { credentials: 'include' });
+      const data = await response.json();
+      setIsAdmin(data.admin || false);
+    } catch (error) {
+      console.error('Error checking auth:', error);
+    }
+  };
+
   const loadBlockchainData = async () => {
+    setLoading(true);
     try {
       const [infoRes, blocksRes] = await Promise.all([
         fetch('/api/blockchain/info', { credentials: 'include' }),
         fetch('/api/blockchain/blocks', { credentials: 'include' })
       ]);
 
+      if (!infoRes.ok || !blocksRes.ok) {
+        console.error('Error loading blockchain data');
+        return;
+      }
+
       const info = await infoRes.json();
       const blocksData = await blocksRes.json();
+
+      console.log('Blockchain info loaded:', info); // Debug log
 
       setBlockchainInfo(info);
       setBlocks(blocksData);
@@ -60,14 +80,33 @@ export default function BlockchainExplorer() {
       setValidationResult(result);
       
       // Recargar información después de validar
-      const infoRes = await fetch('/api/blockchain/info', { credentials: 'include' });
-      const info = await infoRes.json();
-      setBlockchainInfo(info);
+      await loadBlockchainData();
     } catch (error) {
       console.error('Error validating blockchain:', error);
       setValidationResult({ valid: false, message: 'Error al validar' });
     } finally {
       setValidating(false);
+    }
+  };
+
+  const resetBlockchain = async () => {
+    if (!confirm('¿Estás seguro de que quieres reiniciar la blockchain? Esto eliminará todos los bloques excepto el génesis.')) {
+      return;
+    }
+    
+    try {
+      const response = await fetch('/api/blockchain/reset', { 
+        method: 'POST',
+        credentials: 'include' 
+      });
+      
+      if (response.ok) {
+        setValidationResult({ valid: true, message: 'Blockchain reiniciada exitosamente' });
+        await loadBlockchainData();
+      }
+    } catch (error) {
+      console.error('Error resetting blockchain:', error);
+      setValidationResult({ valid: false, message: 'Error al reiniciar la blockchain' });
     }
   };
 
@@ -79,15 +118,17 @@ export default function BlockchainExplorer() {
     
     parts.forEach(part => {
       const [key, value] = part.split(':');
-      parsed[key] = value;
+      if (key && value) {
+        parsed[key] = value;
+      }
     });
     
     return {
       type: 'rating',
-      userId: parsed.USER,
-      movieId: parsed.MOVIE,
-      rating: parsed.RATING,
-      timestamp: parsed.TIME
+      userId: parsed.USER || 'N/A',
+      movieId: parsed.MOVIE || 'N/A',
+      rating: parsed.RATING || 'N/A',
+      timestamp: parsed.TIME || 'N/A'
     };
   };
 
@@ -109,6 +150,9 @@ export default function BlockchainExplorer() {
       </div>
     );
   }
+
+  // Determinar si la blockchain es válida basándose en el estado actual
+  const isBlockchainValid = blockchainInfo?.isValid ?? false;
 
   return (
     <div className="min-h-screen bg-[#111111] text-white">
@@ -136,14 +180,25 @@ export default function BlockchainExplorer() {
                   <Shield className="text-[#1db954]" />
                   <span>Estado de la Blockchain</span>
                 </h2>
-                <button
-                  onClick={validateBlockchain}
-                  disabled={validating}
-                  className="flex items-center space-x-2 px-4 py-2 bg-[#1db954]/10 text-[#1db954] rounded-lg hover:bg-[#1db954]/20 transition-colors disabled:opacity-50"
-                >
-                  <RefreshCw size={16} className={validating ? 'animate-spin' : ''} />
-                  <span>Validar Integridad</span>
-                </button>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={validateBlockchain}
+                    disabled={validating}
+                    className="flex items-center space-x-2 px-4 py-2 bg-[#1db954]/10 text-[#1db954] rounded-lg hover:bg-[#1db954]/20 transition-colors disabled:opacity-50"
+                  >
+                    <RefreshCw size={16} className={validating ? 'animate-spin' : ''} />
+                    <span>Validar Integridad</span>
+                  </button>
+                  {isAdmin && !isBlockchainValid && (
+                    <button
+                      onClick={resetBlockchain}
+                      className="flex items-center space-x-2 px-4 py-2 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500/20 transition-colors"
+                    >
+                      <AlertTriangle size={16} />
+                      <span>Reiniciar</span>
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -158,7 +213,7 @@ export default function BlockchainExplorer() {
                 <div className="bg-black/20 rounded-lg p-4">
                   <p className="text-gray-400 text-sm mb-1">Estado</p>
                   <div className="flex items-center space-x-2">
-                    {blockchainInfo.isValid ? (
+                    {isBlockchainValid ? (
                       <>
                         <CheckCircle className="text-[#1db954]" size={20} />
                         <span className="text-[#1db954] font-semibold">Válida</span>
@@ -220,11 +275,11 @@ export default function BlockchainExplorer() {
                         <p className="text-sm text-gray-400">{formatTimestamp(block.timestamp)}</p>
                       </div>
                     </div>
-                    {!isGenesis && (
+                    {!isGenesis && blockData.rating !== 'N/A' && (
                       <div className="text-right">
                         <p className="text-sm text-gray-400">Valoración</p>
                         <p className="text-xl font-bold text-yellow-400">
-                          {'★'.repeat(parseInt(blockData.rating))}
+                          {'★'.repeat(parseInt(blockData.rating) || 0)}
                         </p>
                       </div>
                     )}

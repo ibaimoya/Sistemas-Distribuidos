@@ -18,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
  * Mantiene una instancia única de la blockchain en memoria.
  * 
  * @author Ibai Moya Aroz
- * 
  * @version 1.0
  * @since 1.0
  */
@@ -26,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BlockchainService {
     
-    /** Instancia única de la blockchain. */
+    /** Instancia única de la blockchain */
     private Blockchain blockchain;
     
     /**
@@ -36,6 +35,15 @@ public class BlockchainService {
     public void init() {
         blockchain = new Blockchain();
         log.info("Blockchain inicializada con bloque génesis");
+        
+        // Verificar que la blockchain se inicializó correctamente
+        if (blockchain.isChainValid()) {
+            log.info("Blockchain válida con {} bloques", blockchain.getChain().size());
+        } else {
+            log.error("¡Blockchain inválida al inicializar!");
+            // Intentar reiniciar
+            resetBlockchain();
+        }
     }
     
     /**
@@ -50,19 +58,24 @@ public class BlockchainService {
         log.info("Añadiendo valoración a blockchain: User={}, Movie={}, Rating={}", 
                  userId, movieId, rating);
         
-        Block newBlock = blockchain.addRating(userId, movieId, rating);
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("blockIndex", newBlock.getIndex());
-        response.put("blockHash", newBlock.getHash());
-        response.put("timestamp", newBlock.getTimestamp());
-        response.put("previousHash", newBlock.getPreviousHash());
-        response.put("nonce", newBlock.getNonce());
-        
-        log.info("Bloque #{} minado exitosamente con hash: {}", 
-                 newBlock.getIndex(), newBlock.getHash());
-        
-        return response;
+        try {
+            Block newBlock = blockchain.addRating(userId, movieId, rating);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("blockIndex", newBlock.getIndex());
+            response.put("blockHash", newBlock.getHash());
+            response.put("timestamp", newBlock.getTimestamp());
+            response.put("previousHash", newBlock.getPreviousHash());
+            response.put("nonce", newBlock.getNonce());
+            
+            log.info("Bloque #{} minado exitosamente con hash: {}", 
+                     newBlock.getIndex(), newBlock.getHash());
+            
+            return response;
+        } catch (Exception e) {
+            log.error("Error añadiendo valoración a blockchain", e);
+            throw new RuntimeException("Error al añadir valoración a blockchain", e);
+        }
     }
     
     /**
@@ -71,7 +84,10 @@ public class BlockchainService {
      * @return información resumida de la blockchain
      */
     public BlockchainInfo getBlockchainInfo() {
-        return blockchain.getInfo();
+        BlockchainInfo info = blockchain.getInfo();
+        log.info("BlockchainInfo - Total bloques: {}, Válida: {}, Dificultad: {}", 
+                 info.getTotalBlocks(), info.isValid(), info.getDifficulty());
+        return info;
     }
     
     /**
@@ -130,5 +146,20 @@ public class BlockchainService {
         blockInfo.put("nonce", block.getNonce());
         
         return blockInfo;
+    }
+    
+    /**
+     * Reinicia la blockchain creando una nueva instancia.
+     * ADVERTENCIA: Esto eliminará todos los bloques excepto el génesis.
+     */
+    public void resetBlockchain() {
+        log.warn("Reiniciando blockchain - todos los bloques serán eliminados");
+        blockchain = new Blockchain();
+        log.info("Blockchain reiniciada con bloque génesis");
+        
+        // Verificar que la nueva blockchain es válida
+        if (!blockchain.isChainValid()) {
+            log.error("Error crítico: La nueva blockchain no es válida");
+        }
     }
 }
