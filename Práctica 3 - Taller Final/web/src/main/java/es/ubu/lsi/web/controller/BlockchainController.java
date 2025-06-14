@@ -40,7 +40,8 @@ public class BlockchainController {
     @GetMapping("/info")
     public ResponseEntity<BlockchainInfo> getBlockchainInfo() {
         BlockchainInfo info = blockchainService.getBlockchainInfo();
-        // Log para debug
+
+        /* Log para debug. */
         System.out.println("=== BLOCKCHAIN INFO DEBUG ===");
         System.out.println("Total bloques: " + info.getTotalBlocks());
         System.out.println("Dificultad: " + info.getDifficulty());

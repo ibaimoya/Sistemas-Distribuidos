@@ -20,27 +20,16 @@ import lombok.NoArgsConstructor;
 @Builder
 public class BlockchainInfo {
     
-    /** Número total de bloques en la cadena */
+    /** Número total de bloques en la cadena. */
     private int totalBlocks;
     
-    /** Dificultad actual de minado */
+    /** Dificultad actual de minado. */
     private int difficulty;
     
-    /** Indica si la cadena es válida */
+    /** Indica si la cadena es válida. */
     @JsonProperty("isValid")
     private boolean valid;
     
-    /** Hash del último bloque */
+    /** Hash del último bloque. */
     private String latestBlockHash;
-    
-    /**
-     * Getter personalizado para mantener compatibilidad.
-     * Jackson usará este método para serializar el campo como "isValid".
-     * 
-     * @return true si la blockchain es válida
-     */
-    @JsonProperty("isValid")
-    public boolean isValid() {
-        return valid;
-    }
 }

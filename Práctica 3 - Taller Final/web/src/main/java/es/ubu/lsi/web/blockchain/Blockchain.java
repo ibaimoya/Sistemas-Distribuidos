@@ -32,7 +32,7 @@ public class Blockchain {
         this.chain = new ArrayList<>();
         this.difficulty = 3; // Dificultad baja para demostración
         
-        // Crear y minar el bloque génesis
+        /* Crea y mina el bloque génesis. */
         Block genesis = createGenesisBlock();
         genesis.mineBlock(difficulty);
         chain.add(genesis);
@@ -82,8 +82,8 @@ public class Blockchain {
     public Block addRating(Long userId, Integer movieId, Integer rating) {
         String data = String.format("USER:%d|MOVIE:%d|RATING:%d|TIME:%d", 
                                     userId, movieId, rating, System.currentTimeMillis());
-        
-        // Si no hay bloques, crear el génesis primero
+
+        /* Si no hay bloques, crea el génesis primero. */
         if (chain.isEmpty()) {
             log.warn("Blockchain vacía, creando bloque génesis");
             Block genesis = createGenesisBlock();
@@ -109,13 +109,14 @@ public class Blockchain {
      * @return true si la cadena es válida, false si hay algún problema
      */
     public boolean isChainValid() {
-        // Si no hay bloques, la cadena es técnicamente válida pero vacía
+
+        /* Si no hay bloques, la cadena es técnicamente válida pero vacía. */
         if (chain.isEmpty()) {
             log.warn("Blockchain vacía");
             return true;
         }
-        
-        // Si solo hay un bloque (génesis), verificar solo ese
+
+        /* Si solo hay un bloque (génesis), verifica solo ese. */
         if (chain.size() == 1) {
             Block genesis = chain.get(0);
             String calculatedHash = genesis.calculateHash();
@@ -123,8 +124,8 @@ public class Blockchain {
                 log.error("Hash del bloque génesis no coincide");
                 return false;
             }
-            
-            // Verificar que cumple con la dificultad
+
+            /* Verifica que cumple con la dificultad. */
             String target = new String(new char[difficulty]).replace('\0', '0');
             int hashLength = genesis.getHash().length();
             int checkLength = Math.min(difficulty, hashLength);
@@ -137,28 +138,28 @@ public class Blockchain {
             
             return true;
         }
-        
-        // Verificar el resto de la cadena
+
+        /* Verifica el resto de la cadena. */
         for (int i = 1; i < chain.size(); i++) {
             Block currentBlock = chain.get(i);
             Block previousBlock = chain.get(i - 1);
-            
-            // Verificar que el hash del bloque actual es correcto
+
+            /* Verifica que el hash del bloque actual es correcto. */
             String calculatedHash = currentBlock.calculateHash();
             if (!currentBlock.getHash().equals(calculatedHash)) {
                 log.error("Hash del bloque {} no coincide. Esperado: {}, Calculado: {}", 
                          i, currentBlock.getHash(), calculatedHash);
                 return false;
             }
-            
-            // Verificar que el hash del bloque anterior coincide
+
+            /* Verifica que el hash del bloque anterior coincide. */
             if (!currentBlock.getPreviousHash().equals(previousBlock.getHash())) {
                 log.error("Hash previo del bloque {} no coincide con el hash del bloque {}", 
                          i, i-1);
                 return false;
             }
-            
-            // Verificar que el hash cumple con la dificultad
+
+            /* Verifica que el hash cumple con la dificultad. */
             String target = new String(new char[difficulty]).replace('\0', '0');
             int hashLength = currentBlock.getHash().length();
             int checkLength = Math.min(difficulty, hashLength);

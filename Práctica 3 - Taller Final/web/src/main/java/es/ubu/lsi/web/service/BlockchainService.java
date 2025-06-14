@@ -36,12 +36,13 @@ public class BlockchainService {
         blockchain = new Blockchain();
         log.info("Blockchain inicializada con bloque génesis");
         
-        // Verificar que la blockchain se inicializó correctamente
+        /* Verifica que la blockchain se ha inicializado correctamente. */
         if (blockchain.isChainValid()) {
             log.info("Blockchain válida con {} bloques", blockchain.getChain().size());
         } else {
             log.error("¡Blockchain inválida al inicializar!");
-            // Intentar reiniciar
+
+            /* Intenta reiniciar. */
             resetBlockchain();
         }
     }
@@ -156,8 +157,8 @@ public class BlockchainService {
         log.warn("Reiniciando blockchain - todos los bloques serán eliminados");
         blockchain = new Blockchain();
         log.info("Blockchain reiniciada con bloque génesis");
-        
-        // Verificar que la nueva blockchain es válida
+
+        /* Verifica que la nueva blockchain es válida. */
         if (!blockchain.isChainValid()) {
             log.error("Error crítico: La nueva blockchain no es válida");
         }

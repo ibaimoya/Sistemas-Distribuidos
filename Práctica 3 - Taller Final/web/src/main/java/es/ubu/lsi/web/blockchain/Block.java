@@ -13,6 +13,7 @@ import lombok.Setter;
  * Cada bloque contiene datos de valoración y está enlazado al bloque anterior.
  * 
  * @author Ibai Moya Aroz
+ * 
  * @version 1.0
  * @since 1.0
  */
@@ -59,13 +60,13 @@ public class Block {
      * 
      * @return el hash calculado
      */
-    public String calculateHash() {
+    public final String calculateHash() {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             String input = index + timestamp + data + previousHash + nonce;
             byte[] hashBytes = digest.digest(input.getBytes("UTF-8"));
-            
-            // Convertir bytes a hexadecimal
+
+            /* Convvierte bytes a hexadecimal. */
             StringBuilder hexString = new StringBuilder();
             for (byte b : hashBytes) {
                 String hex = Integer.toHexString(0xff & b);
@@ -87,7 +88,7 @@ public class Block {
         String target = new String(new char[difficulty]).replace('\0', '0');
         
         while (true) {
-            // Verificar que el hash tiene suficiente longitud
+            /* Verifica que el hash tiene suficiente longitud. */
             if (hash.length() >= difficulty) {
                 String hashPrefix = hash.substring(0, difficulty);
                 if (hashPrefix.equals(target)) {
@@ -98,11 +99,12 @@ public class Block {
             
             nonce++;
             hash = calculateHash();
-            
-            // Evitar overflow del nonce
+
+            /* Evita overflow del nonce */
             if (nonce < 0) {
                 nonce = 0;
-                // Cambiar el timestamp para obtener un hash diferente
+
+                /* Cambia el timestamp para obtener un hash diferent. */
                 timestamp = Instant.now().toEpochMilli();
             }
         }
