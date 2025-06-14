@@ -4,18 +4,18 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Block {
-  index: number;
-  timestamp: number;
-  data: string;
-  hash: string;
+  index:        number;
+  timestamp:    number;
+  data:         string;
+  hash:         string;
   previousHash: string;
-  nonce: number;
+  nonce:        number;
 }
 
 interface BlockchainInfo {
-  totalBlocks: number;
-  difficulty: number;
-  isValid: boolean;
+  totalBlocks:     number;
+  difficulty:      number;
+  isValid:         boolean;
   latestBlockHash: string;
 }
 
@@ -27,6 +27,7 @@ export default function BlockchainExplorer() {
   const [validating, setValidating] = useState(false);
   const [validationResult, setValidationResult] = useState<{ valid: boolean; message: string } | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showJson, setShowJson] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -377,11 +378,59 @@ export default function BlockchainExplorer() {
                         <p className="text-sm text-gray-400 mb-1">Nonce (Proof of Work)</p>
                         <p className="font-mono text-2xl">{selectedBlock.nonce}</p>
                       </div>
+                      {/* Botón para abrir visor JSON. */}
+                        <div className="flex justify-end mt-6">
+                        <button
+                            onClick={() => setShowJson(true)}
+                            className="flex items-center space-x-2 px-4 py-2 bg-[#1db954]/10 text-[#1db954] rounded-lg hover:bg-[#1db954]/20 transition-colors"
+                        >
+                            <Hash size={16} />
+                            <span>Ver JSON</span>
+                        </button>
+                        </div>
                     </div>
                   </div>
                 </motion.div>
               </>
             )}
+            {/* Visor JSON. */}
+                <AnimatePresence>
+                {showJson && (
+                    <>
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/80 z-50"
+                        onClick={() => setShowJson(false)} // Cierra al pulsar fuera.
+                    />
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="fixed inset-0 flex items-center justify-center p-4 z-50 pointer-events-none"
+                    >
+                        <div
+                        className="bg-[#1a1a1a] rounded-xl p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto pointer-events-auto"
+                        onClick={e => e.stopPropagation()} // Evita cierre si pulsa dentro.
+                        >
+                        <div className="flex items-center justify-between mb-4">
+                            <h4 className="text-lg font-bold">JSON del Bloque</h4>
+                            <button
+                            onClick={() => setShowJson(false)}
+                            className="text-gray-400 hover:text-white transition-colors p-2 hover:bg-white/10 rounded-lg"
+                            >
+                            <X size={20} />
+                            </button>
+                        </div>
+                        <pre className="text-sm text-green-400 whitespace-pre-wrap">
+                            {JSON.stringify(selectedBlock, null, 2)}
+                        </pre>
+                        </div>
+                    </motion.div>
+                    </>
+                )}
+                </AnimatePresence>
           </AnimatePresence>
         </div>
       </main>
