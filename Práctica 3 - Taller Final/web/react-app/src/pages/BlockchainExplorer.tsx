@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Shield, Hash, Clock, Link as LinkIcon, CheckCircle, XCircle, RefreshCw, X, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Shield, Hash, Clock, Link as LinkIcon, CheckCircle, XCircle, RefreshCw, X, AlertTriangle, Copy, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -28,6 +28,7 @@ export default function BlockchainExplorer() {
   const [validationResult, setValidationResult] = useState<{ valid: boolean; message: string } | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showJson, setShowJson] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -108,6 +109,18 @@ export default function BlockchainExplorer() {
     } catch (error) {
       console.error('Error resetting blockchain:', error);
       setValidationResult({ valid: false, message: 'Error al reiniciar la blockchain' });
+    }
+  };
+
+  const copyToClipboard = async () => {
+    if (!selectedBlock) return;
+    
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(selectedBlock, null, 2));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Error copying to clipboard:', error);
     }
   };
 
@@ -321,7 +334,7 @@ export default function BlockchainExplorer() {
 
           {/* Block Detail Modal */}
           <AnimatePresence>
-            {selectedBlock && (
+            {selectedBlock && !showJson && (
               <>
                 {/* Overlay */}
                 <motion.div
@@ -378,59 +391,83 @@ export default function BlockchainExplorer() {
                         <p className="text-sm text-gray-400 mb-1">Nonce (Proof of Work)</p>
                         <p className="font-mono text-2xl">{selectedBlock.nonce}</p>
                       </div>
-                      {/* Botón para abrir visor JSON. */}
-                        <div className="flex justify-end mt-6">
+
+                      <div className="flex justify-end mt-6">
                         <button
-                            onClick={() => setShowJson(true)}
-                            className="flex items-center space-x-2 px-4 py-2 bg-[#1db954]/10 text-[#1db954] rounded-lg hover:bg-[#1db954]/20 transition-colors"
+                          onClick={() => setShowJson(true)}
+                          className="flex items-center space-x-2 px-4 py-2 bg-[#1db954]/10 text-[#1db954] rounded-lg hover:bg-[#1db954]/20 transition-colors"
                         >
-                            <Hash size={16} />
-                            <span>Ver JSON</span>
+                          <Hash size={16} />
+                          <span>Ver JSON</span>
                         </button>
-                        </div>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
               </>
             )}
-            {/* Visor JSON. */}
-                <AnimatePresence>
-                {showJson && (
-                    <>
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/80 z-50"
-                        onClick={() => setShowJson(false)} // Cierra al pulsar fuera.
-                    />
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        className="fixed inset-0 flex items-center justify-center p-4 z-50 pointer-events-none"
-                    >
-                        <div
-                        className="bg-[#1a1a1a] rounded-xl p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto pointer-events-auto"
-                        onClick={e => e.stopPropagation()} // Evita cierre si pulsa dentro.
+
+            {/* JSON Viewer Modal */}
+            {showJson && selectedBlock && (
+              <>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 bg-black/80 z-60"
+                  onClick={() => setShowJson(false)}
+                />
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className="fixed inset-0 flex items-center justify-center p-4 z-60 pointer-events-none"
+                >
+                  <div
+                    className="bg-[#1a1a1a] rounded-xl w-full max-w-3xl max-h-[85vh] overflow-hidden pointer-events-auto"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    {/* Header */}
+                    <div className="flex items-center justify-between p-6 border-b border-white/10">
+                      <h4 className="text-xl font-bold">JSON del Bloque #{selectedBlock.index}</h4>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={copyToClipboard}
+                          className="flex items-center space-x-2 px-3 py-2 bg-[#1db954]/10 text-[#1db954] rounded-lg hover:bg-[#1db954]/20 transition-colors"
                         >
-                        <div className="flex items-center justify-between mb-4">
-                            <h4 className="text-lg font-bold">JSON del Bloque</h4>
-                            <button
-                            onClick={() => setShowJson(false)}
-                            className="text-gray-400 hover:text-white transition-colors p-2 hover:bg-white/10 rounded-lg"
-                            >
-                            <X size={20} />
-                            </button>
-                        </div>
-                        <pre className="text-sm text-green-400 whitespace-pre-wrap">
-                            {JSON.stringify(selectedBlock, null, 2)}
+                          {copied ? (
+                            <>
+                              <Check size={16} />
+                              <span>Copiado</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy size={16} />
+                              <span>Copiar</span>
+                            </>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => setShowJson(false)}
+                          className="text-gray-400 hover:text-white transition-colors p-2 hover:bg-white/10 rounded-lg"
+                        >
+                          <X size={20} />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* JSON Content */}
+                    <div className="overflow-auto max-h-[calc(85vh-100px)] p-6">
+                      <div className="bg-black/20 rounded-lg p-4">
+                        <pre className="text-sm text-gray-300 whitespace-pre-wrap font-mono leading-relaxed">
+                          {JSON.stringify(selectedBlock, null, 2)}
                         </pre>
-                        </div>
-                    </motion.div>
-                    </>
-                )}
-                </AnimatePresence>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </>
+            )}
           </AnimatePresence>
         </div>
       </main>
