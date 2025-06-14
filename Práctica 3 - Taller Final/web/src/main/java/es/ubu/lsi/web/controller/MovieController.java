@@ -415,4 +415,31 @@ public class MovieController {
 
         return ResponseEntity.ok(res);
     }
+
+    /**
+     * Obtiene los videos (trailers, clips, etc.) de una película específica por su ID.
+     * 
+     * @param movieId el ID de la película
+     * @return los videos de la película
+     */
+    @GetMapping("/movies/{movieId}/videos")
+    public ResponseEntity<Object> getMovieVideos(@PathVariable int movieId) {
+        String url = "https://api.themoviedb.org/3/movie/" + movieId + "/videos";
+
+        if (tmdbAccessToken != null && !tmdbAccessToken.isEmpty()) {
+            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+            headers.setBearerAuth(tmdbAccessToken);
+
+            org.springframework.http.HttpEntity<Object> entity = new org.springframework.http.HttpEntity<>(headers);
+
+            return ResponseEntity.ok(restTemplate.exchange(
+                    url,
+                    org.springframework.http.HttpMethod.GET,
+                    entity,
+                    Object.class).getBody());
+        } else {
+            url += "?api_key=" + tmdbApiKey;
+            return ResponseEntity.ok(restTemplate.getForObject(url, Object.class));
+        }
+    }
 }

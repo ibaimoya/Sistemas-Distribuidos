@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Star, ArrowLeft, Clock, Calendar, Heart, X, Users, Shield } from 'lucide-react';
+import { Star, ArrowLeft, Clock, Calendar, Heart, X, Users, Shield, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Map from "../components/Map";
 import { COUNTRY_COORDS } from "../constants/countryCoords";
@@ -15,6 +15,16 @@ interface Movie {
   runtime: number;
   vote_average: number;
   genres: { id: number; name: string }[];
+  production_countries?: { iso_3166_1: string; name: string }[];
+}
+
+interface Video {
+  id: string;
+  key: string;
+  name: string;
+  site: string;
+  type: string;
+  official: boolean;
 }
 
 interface RatingData {
@@ -27,6 +37,7 @@ interface RatingData {
 const MovieDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [movie, setMovie] = useState<Movie | null>(null);
+  const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [userRating, setUserRating] = useState<number>(0);
   const [hoverRating, setHoverRating] = useState<number>(0);
@@ -41,13 +52,16 @@ const MovieDetail: React.FC = () => {
   });
   const [isRatingLoading, setIsRatingLoading] = useState(false);
   const [ratingMessage, setRatingMessage] = useState<string>('');
+  const [showTrailerModal, setShowTrailerModal] = useState(false);
+  const [selectedTrailer, setSelectedTrailer] = useState<Video | null>(null);
+  const [blockHash, setBlockHash] = useState<string>('');
+
   const iso = movie?.production_countries?.[0]?.iso_3166_1;
   const coords = COUNTRY_COORDS[iso ?? ""] ?? { lat: 20, lng: 0 };
 
-  const [blockHash, setBlockHash] = useState<string>('');
-
   useEffect(() => {
     fetchMovieDetails();
+    fetchMovieVideos();
     checkIfLiked();
     loadUserRating();
   }, [id]);
@@ -63,6 +77,24 @@ const MovieDetail: React.FC = () => {
       console.error('Error fetching movie details:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchMovieVideos = async () => {
+    try {
+      const response = await fetch(`/api/movies/${id}/videos`, {
+        credentials: 'include'
+      });
+      const data = await response.json();
+      const movieVideos = data.results || [];
+      
+      // Filtrar solo tráilers de YouTube
+      const trailers = movieVideos
+        .filter((video: Video) => video.site === 'YouTube' && video.type === 'Trailer');
+      
+      setVideos(trailers);
+    } catch (error) {
+      console.error('Error fetching movie videos:', error);
     }
   };
 
@@ -120,19 +152,16 @@ const MovieDetail: React.FC = () => {
           totalRatings: data.totalRatings
         });
         
-        // Guardar el hash del bloque
         if (data.blockHash) {
           setBlockHash(data.blockHash);
         }
         
-        // Mostrar mensaje de confirmación
         if (data.action === 'updated') {
           setRatingMessage('¡Valoración actualizada!');
         } else {
           setRatingMessage('¡Valoración guardada!');
         }
         
-        // Limpiar mensaje después de 5 segundos para que se vea el hash
         setTimeout(() => setRatingMessage(''), 5000);
       } else {
         setRatingMessage('Error al guardar valoración');
@@ -171,6 +200,18 @@ const MovieDetail: React.FC = () => {
     }
   };
 
+  const handlePosterClick = () => {
+    if (videos.length > 0) {
+      setSelectedTrailer(videos[0]); // Usar el primer tráiler disponible
+      setShowTrailerModal(true);
+    }
+  };
+
+  const closeTrailerModal = () => {
+    setShowTrailerModal(false);
+    setSelectedTrailer(null);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#111111] flex justify-center items-center">
@@ -206,10 +247,11 @@ const MovieDetail: React.FC = () => {
             {/* Poster */}
             <div className="w-full md:w-1/3">
               <motion.div 
-                className="relative rounded-lg overflow-hidden shadow-2xl"
+                className="relative rounded-lg overflow-hidden shadow-2xl cursor-pointer group"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
+                onClick={handlePosterClick}
               >
                 <img
                   src={movie.poster_path 
@@ -222,9 +264,34 @@ const MovieDetail: React.FC = () => {
                       `)}`
                   }
                   alt={movie.title}
-                  className="w-full aspect-[2/3] object-cover"
+                  className="w-full aspect-[2/3] object-cover transition-transform duration-300 group-hover:scale-105"
                 />
+                
+                {/* Overlay con botón de play cuando hay tráilers */}
+                {videos.length > 0 && (
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <motion.div
+                      className="bg-[#1db954] rounded-full p-4 shadow-2xl"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Play size={32} className="text-white ml-1" fill="white" />
+                    </motion.div>
+                  </div>
+                )}
               </motion.div>
+
+              {/* Información de tráiler */}
+              {videos.length > 0 && (
+                <motion.p 
+                  className="text-center text-sm text-[#1db954] mt-3 font-medium"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.8 }}
+                >
+                  🎬 Haz clic para ver el tráiler
+                </motion.p>
+              )}
             </div>
 
             {/* Movie Info */}
@@ -380,7 +447,6 @@ const MovieDetail: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Mensaje de confirmación */}
                   <AnimatePresence>
                     {ratingMessage && (
                       <motion.div
@@ -396,7 +462,6 @@ const MovieDetail: React.FC = () => {
                     )}
                   </AnimatePresence>
 
-                  {/* Mostrar hash del bloque si existe */}
                   {blockHash && (
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
@@ -445,17 +510,49 @@ const MovieDetail: React.FC = () => {
                     <span className="text-gray-400 ml-2">/ 10</span>
                   </div>
                 </div>
-                  {iso && (
-                    <div className="bg-[#1a1a1a] rounded-lg p-6 mt-8">
-                      <h2 className="text-xl font-semibold mb-4">Dónde se produjo</h2>
-                      <Map center={coords} height={250} />
-                    </div>
-                  )}
+
+                {/* Map Section */}
+                {iso && (
+                  <div className="bg-[#1a1a1a] rounded-lg p-6 mt-8">
+                    <h2 className="text-xl font-semibold mb-4">Dónde se produjo</h2>
+                    <Map center={coords} height={250} />
+                  </div>
+                )}
               </motion.div>
             </div>
           </div>
         </div>
       </main>
+
+      {/* Modal del Tráiler */}
+      <AnimatePresence>
+        {showTrailerModal && selectedTrailer && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+            onClick={closeTrailerModal}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              className="relative w-full max-w-4xl aspect-video bg-black rounded-lg overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Video de YouTube */}
+              <iframe
+                src={`https://www.youtube.com/embed/${selectedTrailer.key}?autoplay=1&rel=0&modestbranding=1`}
+                title={selectedTrailer.name}
+                className="w-full h-full border-0"
+                allowFullScreen
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
