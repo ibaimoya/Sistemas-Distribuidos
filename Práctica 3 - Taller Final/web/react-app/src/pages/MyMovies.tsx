@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, Heart, User, ArrowLeft, X } from 'lucide-react';
+import { Heart, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
+import { Header } from '../components';
 
 interface Movie {
   id: number;
@@ -12,8 +13,6 @@ interface Movie {
 
 const MyMovies: React.FC = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const [username, setUsername] = useState('Usuario');
   const [hoveredMovie, setHoveredMovie] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [animatingMovie, setAnimatingMovie] = useState<number | null>(null);
@@ -21,24 +20,8 @@ const MyMovies: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    checkAuth();
     fetchFavorites();
   }, []);
-
-  const checkAuth = async () => {
-    try {
-      const response = await fetch('/auth/check', {
-        credentials: 'include'
-      });
-      const data = await response.json();
-      
-      if (data.authenticated) {
-        setUsername(data.username);
-      } 
-    } catch (error) {
-      console.error('Error checking auth:', error);
-    }
-  };
 
   const fetchFavorites = async () => {
     try {
@@ -87,73 +70,12 @@ const MyMovies: React.FC = () => {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await fetch('/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
-      window.location.href = '/welcome';
-    } catch (error) {
-      console.error('Error logging out:', error);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-[#111111] text-white">
-      {/* Header */}
-      <header className="fixed w-full z-50 flex justify-between items-center px-8 py-4 bg-gradient-to-b from-black/80 to-transparent">
-        <div className="flex items-center space-x-4">
-          <Link to="/" className="text-[#1db954] hover:text-[#1ed760] transition-colors">
-            <ArrowLeft size={24} />
-          </Link>
-          <h1 className="text-3xl font-bold text-[#1db954] transition-transform duration-300 hover:scale-105 cursor-pointer">
-            Mis Películas
-          </h1>
-        </div>
-        
-        <div className="relative">
-          <button
-            className="flex items-center space-x-2 hover:text-[#1db954] transition-colors"
-            onMouseEnter={() => setShowUserMenu(true)}
-            onMouseLeave={() => setShowUserMenu(false)}
-          >
-            <User size={24} />
-            <span>{username}</span>
-          </button>
-
-          <AnimatePresence>
-            {showUserMenu && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="absolute right-0 mt-2 w-48 bg-[#1a1a1a] rounded-md shadow-lg py-1"
-                onMouseEnter={() => setShowUserMenu(true)}
-                onMouseLeave={() => setShowUserMenu(false)}
-              >
-                <Link
-                  to="/"
-                  className="flex items-center w-full px-4 py-2 text-sm hover:bg-[#1db954] hover:text-white transition-colors"
-                >
-                  <Heart size={16} className="mr-2" />
-                  Inicio
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center w-full px-4 py-2 text-sm hover:bg-[#1db954] hover:text-white transition-colors"
-                >
-                  <LogOut size={16} className="mr-2" />
-                  Cerrar sesión
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </header>
+      <Header title="Mis Películas" showBackButton={true} backTo="/" />
 
       {/* Main Content */}
-      <main className="pt-24 px-8">
+      <main className="pt-32 px-8">
         {loading ? (
           <div className="flex justify-center py-16">
             <div className="flex space-x-2">

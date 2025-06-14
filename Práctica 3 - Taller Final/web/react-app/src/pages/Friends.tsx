@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { 
-  ArrowLeft, 
   UserPlus, 
   Users, 
   Search, 
@@ -12,9 +10,11 @@ import {
   Trash2,
   Send,
   X,
-  Bell
+  Bell,
+  UserX
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Header } from '../components';
 
 interface Friend {
   id: number;
@@ -187,26 +187,26 @@ const Friends: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#111111] text-white">
-      {/* Header */}
-      <header className="fixed w-full z-50 flex justify-between items-center px-8 py-4 bg-gradient-to-b from-black/80 to-transparent">
-        <div className="flex items-center space-x-4">
-          <Link to="/" className="text-[#1db954] hover:text-[#1ed760] transition-colors">
-            <ArrowLeft size={24} />
-          </Link>
-          <h1 className="text-3xl font-bold text-[#1db954]">Amigos</h1>
-        </div>
+      <Header 
+        title="Amigos" 
+        showBackButton={true} 
+        backTo="/" 
+        showNotifications={true} 
+      />
 
-        <button
-          onClick={() => setShowAddFriend(true)}
-          className="flex items-center space-x-2 px-4 py-2 bg-[#1db954] hover:bg-[#1ed760] rounded-full transition-colors"
-        >
-          <UserPlus size={20} />
-          <span>Añadir amigo</span>
-        </button>
-      </header>
-
-      <main className="pt-24 px-8 pb-8">
+      <main className="pt-32 px-8 pb-8">
         <div className="max-w-6xl mx-auto">
+          {/* Add Friend Button */}
+          <div className="flex justify-end mb-8">
+            <button
+              onClick={() => setShowAddFriend(true)}
+              className="flex items-center space-x-2 px-6 py-3 bg-[#1db954] hover:bg-[#1ed760] rounded-full transition-all duration-200 hover:scale-105 shadow-lg shadow-[#1db954]/30"
+            >
+              <UserPlus size={20} />
+              <span className="font-medium">Añadir amigo</span>
+            </button>
+          </div>
+
           {/* Mensaje de feedback */}
           <AnimatePresence>
             {message && (
@@ -229,17 +229,17 @@ const Friends: React.FC = () => {
           <div className="flex space-x-1 mb-8 bg-[#1a1a1a] p-1 rounded-lg w-fit">
             <button
               onClick={() => setActiveTab('friends')}
-              className={`px-6 py-2 rounded-md transition-all ${
+              className={`px-6 py-3 rounded-md transition-all font-medium ${
                 activeTab === 'friends'
-                  ? 'bg-[#1db954] text-white'
-                  : 'text-gray-400 hover:text-white'
+                  ? 'bg-[#1db954] text-white shadow-lg'
+                  : 'text-gray-400 hover:text-white hover:bg-white/5'
               }`}
             >
               <span className="flex items-center space-x-2">
                 <Users size={18} />
                 <span>Amigos ({friends.length})</span>
                 {pendingRequestsCount > 0 && (
-                  <span className="ml-2 bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
+                  <span className="ml-2 bg-red-500 text-white text-xs rounded-full px-2 py-0.5 font-semibold">
                     {pendingRequestsCount} pendientes
                   </span>
                 )}
@@ -247,10 +247,10 @@ const Friends: React.FC = () => {
             </button>
             <button
               onClick={() => setActiveTab('sent')}
-              className={`px-6 py-2 rounded-md transition-all ${
+              className={`px-6 py-3 rounded-md transition-all font-medium ${
                 activeTab === 'sent'
-                  ? 'bg-[#1db954] text-white'
-                  : 'text-gray-400 hover:text-white'
+                  ? 'bg-[#1db954] text-white shadow-lg'
+                  : 'text-gray-400 hover:text-white hover:bg-white/5'
               }`}
             >
               <span className="flex items-center space-x-2">
@@ -282,63 +282,77 @@ const Friends: React.FC = () => {
                     >
                       <div className="flex items-center space-x-3">
                         <Bell size={20} className="text-[#1db954]" />
-                        <p className="text-[#1db954]">
+                        <p className="text-[#1db954] font-medium">
                           Tienes {pendingRequestsCount} {pendingRequestsCount === 1 ? 'solicitud pendiente' : 'solicitudes pendientes'} de amistad
                         </p>
                       </div>
-                      <Link
-                        to="/"
-                        className="text-sm text-[#1db954] hover:text-[#1ed760] underline"
-                      >
-                        Ver en notificaciones
-                      </Link>
                     </motion.div>
                   )}
 
                   {friends.length === 0 ? (
-                    <div className="text-center py-16">
-                      <Users size={64} className="mx-auto text-gray-600 mb-4" />
-                      <h2 className="text-2xl font-bold text-gray-400 mb-2">No tienes amigos todavía</h2>
-                      <p className="text-gray-500 mb-6">¡Añade amigos para compartir tus películas favoritas!</p>
-                    </div>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-center py-16"
+                    >
+                      <div className="w-24 h-24 rounded-full bg-[#1a1a1a] flex items-center justify-center mx-auto mb-6">
+                        <UserX size={48} className="text-gray-600" />
+                      </div>
+                      <h2 className="text-3xl font-bold text-gray-400 mb-4">No tienes amigos todavía</h2>
+                      <p className="text-gray-500 mb-8 max-w-md mx-auto">
+                        ¡Conecta con otros usuarios y comparte tus películas favoritas! Busca amigos por su nombre de usuario.
+                      </p>
+                      <button
+                        onClick={() => setShowAddFriend(true)}
+                        className="inline-flex items-center space-x-2 px-6 py-3 bg-[#1db954] hover:bg-[#1ed760] rounded-full transition-all duration-200 hover:scale-105"
+                      >
+                        <UserPlus size={20} />
+                        <span className="font-medium">Añadir tu primer amigo</span>
+                      </button>
+                    </motion.div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {friends.map((friend) => (
                         <motion.div
                           key={friend.id}
                           initial={{ opacity: 0, scale: 0.9 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          className="bg-[#1a1a1a] rounded-lg p-6 hover:bg-[#222] transition-colors"
+                          className="bg-[#1a1a1a] rounded-xl p-6 hover:bg-[#222] transition-all duration-200 border border-white/10 hover:border-[#1db954]/30"
                         >
                           <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center space-x-4">
-                              <div className="w-12 h-12 rounded-full bg-[#1db954]/20 flex items-center justify-center">
-                                <span className="text-lg font-bold text-[#1db954]">
+                              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#1db954] to-[#1ed760] flex items-center justify-center">
+                                <span className="text-lg font-bold text-white">
                                   {friend.nombre.charAt(0).toUpperCase()}
                                 </span>
                               </div>
                               <div>
-                                <h3 className="font-semibold">{friend.nombre}</h3>
+                                <h3 className="font-semibold text-lg">{friend.nombre}</h3>
                                 <p className="text-sm text-gray-400">{friend.email}</p>
                               </div>
                             </div>
                           </div>
 
                           <p className="text-xs text-gray-500 mb-4">
-                            Amigos desde el {new Date(friend.fechaAmistad).toLocaleDateString()}.
+                            Amigos desde el {new Date(friend.fechaAmistad).toLocaleDateString('es-ES', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })}.
                           </p>
 
                           <div className="flex space-x-2">
                             <button
                               disabled
-                              className="flex-1 flex items-center justify-center space-x-2 py-2 bg-[#1db954]/10 text-[#1db954] rounded-lg opacity-50 cursor-not-allowed"
+                              className="flex-1 flex items-center justify-center space-x-2 py-2.5 bg-[#1db954]/10 text-[#1db954] rounded-lg opacity-50 cursor-not-allowed"
                             >
                               <MessageCircle size={16} />
-                              <span>Chat (pronto)</span>
+                              <span className="text-sm font-medium">Chat (próximamente)</span>
                             </button>
                             <button
                               onClick={() => removeFriend(friend.id)}
-                              className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                              className="p-2.5 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors hover:scale-110"
+                              title="Eliminar amigo"
                             >
                               <Trash2 size={16} />
                             </button>
@@ -354,10 +368,19 @@ const Friends: React.FC = () => {
               {activeTab === 'sent' && (
                 <div>
                   {sentRequests.length === 0 ? (
-                    <div className="text-center py-16">
-                      <Send size={64} className="mx-auto text-gray-600 mb-4" />
-                      <h2 className="text-2xl font-bold text-gray-400 mb-2">No has enviado solicitudes</h2>
-                    </div>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-center py-16"
+                    >
+                      <div className="w-24 h-24 rounded-full bg-[#1a1a1a] flex items-center justify-center mx-auto mb-6">
+                        <Send size={48} className="text-gray-600" />
+                      </div>
+                      <h2 className="text-3xl font-bold text-gray-400 mb-4">No has enviado solicitudes</h2>
+                      <p className="text-gray-500 mb-8 max-w-md mx-auto">
+                        Cuando envíes solicitudes de amistad, aparecerán aquí para que puedas ver su estado.
+                      </p>
+                    </motion.div>
                   ) : (
                     <div className="space-y-4">
                       {sentRequests.map((request) => (
@@ -365,30 +388,34 @@ const Friends: React.FC = () => {
                           key={request.id}
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
-                          className="bg-[#1a1a1a] rounded-lg p-4 flex items-center justify-between"
+                          className="bg-[#1a1a1a] rounded-xl p-6 flex items-center justify-between border border-white/10 hover:border-white/20 transition-colors"
                         >
                           <div className="flex items-center space-x-4">
-                            <div className="w-10 h-10 rounded-full bg-[#1db954]/20 flex items-center justify-center">
-                              <span className="text-[#1db954] font-bold">
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#1db954] to-[#1ed760] flex items-center justify-center">
+                              <span className="text-white font-bold text-lg">
                                 {request.destinatario.nombre.charAt(0).toUpperCase()}
                               </span>
                             </div>
                             <div>
-                              <h3 className="font-semibold">{request.destinatario.nombre}</h3>
+                              <h3 className="font-semibold text-lg">{request.destinatario.nombre}</h3>
                               <p className="text-sm text-gray-400">{request.destinatario.email}</p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Enviado el {new Date(request.fecha).toLocaleDateString('es-ES')}
+                              </p>
                             </div>
                           </div>
 
                           <div className="flex items-center space-x-4">
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-white/10">
                               {getStatusIcon(request.estado)}
-                              <span className="text-sm">{getStatusText(request.estado)}</span>
+                              <span className="text-sm font-medium">{getStatusText(request.estado)}</span>
                             </div>
 
                             {request.estado === 'PENDIENTE' && (
                               <button
                                 onClick={() => cancelRequest(request.id)}
-                                className="text-red-400 hover:text-red-300 transition-colors"
+                                className="text-red-400 hover:text-red-300 hover:bg-red-500/10 p-2 rounded-lg transition-all duration-200"
+                                title="Cancelar solicitud"
                               >
                                 <X size={20} />
                               </button>
@@ -419,13 +446,13 @@ const Friends: React.FC = () => {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-[#1a1a1a] rounded-lg p-6 max-w-md w-full"
+              className="bg-[#1a1a1a] rounded-xl p-8 max-w-md w-full border border-white/20"
               onClick={(e) => e.stopPropagation()}
             >
-              <h2 className="text-2xl font-bold mb-4 text-[#1db954]">Añadir amigo</h2>
+              <h2 className="text-2xl font-bold mb-6 text-[#1db954]">Añadir amigo</h2>
               
               <div className="mb-6">
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-3 text-gray-300">
                   Nombre de usuario
                 </label>
                 <div className="relative">
@@ -436,7 +463,7 @@ const Friends: React.FC = () => {
                     onChange={(e) => setSearchUsername(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && sendFriendRequest()}
                     placeholder="Introduce el nombre de usuario..."
-                    className="w-full pl-10 pr-4 py-3 bg-[#111] border border-[#333] rounded-lg text-white focus:outline-none focus:border-[#1db954] transition-colors"
+                    className="w-full pl-10 pr-4 py-3 bg-[#111] border border-[#333] rounded-lg text-white focus:outline-none focus:border-[#1db954] focus:ring-2 focus:ring-[#1db954]/20 transition-all"
                     disabled={sendingRequest}
                   />
                 </div>
@@ -446,7 +473,7 @@ const Friends: React.FC = () => {
                 <button
                   onClick={sendFriendRequest}
                   disabled={sendingRequest || !searchUsername.trim()}
-                  className="flex-1 py-3 bg-[#1db954] hover:bg-[#1ed760] text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                  className="flex-1 py-3 bg-[#1db954] hover:bg-[#1ed760] text-white rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 font-medium shadow-lg hover:shadow-[#1db954]/30"
                 >
                   {sendingRequest ? (
                     <>
@@ -466,7 +493,7 @@ const Friends: React.FC = () => {
                     setSearchUsername('');
                     setMessage(null);
                   }}
-                  className="px-6 py-3 bg-[#333] hover:bg-[#444] text-white rounded-lg transition-colors"
+                  className="px-6 py-3 bg-[#333] hover:bg-[#444] text-white rounded-lg transition-colors font-medium"
                 >
                   Cancelar
                 </button>

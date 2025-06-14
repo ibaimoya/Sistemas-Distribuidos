@@ -4,7 +4,7 @@ import { Star, ArrowLeft, Clock, Calendar, Heart, X, Users, Shield } from 'lucid
 import { motion, AnimatePresence } from 'framer-motion';
 import Map from "../components/Map";
 import { COUNTRY_COORDS } from "../constants/countryCoords";
-
+import { Header } from '../components';
 
 interface Movie {
   id: number;
@@ -147,7 +147,6 @@ const MovieDetail: React.FC = () => {
     }
   };
 
-
   const handleLike = async () => {
     try {
       const response = await fetch(`/api/movies/${id}/like`, {
@@ -194,14 +193,14 @@ const MovieDetail: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#111111] text-white">
-      {/* Header with back button */}
-      <header className="fixed w-full z-50 flex items-center px-8 py-4 bg-gradient-to-b from-black/80 to-transparent">
-        <Link to="/" className="text-[#1db954] hover:text-[#1ed760] transition-colors">
-          <ArrowLeft size={24} />
-        </Link>
-      </header>
+      <Header 
+        title={movie.title} 
+        showBackButton={true} 
+        backTo="/" 
+        showNotifications={true} 
+      />
 
-      <main className="pt-20 px-8">
+      <main className="pt-32 px-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row gap-8">
             {/* Poster */}
@@ -235,8 +234,19 @@ const MovieDetail: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
-                <div className="flex justify-between items-start">
-                  <h1 className="text-4xl font-bold mb-4">{movie.title}</h1>
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-4 text-gray-400 mb-4">
+                      <div className="flex items-center">
+                        <Clock size={16} className="mr-1" />
+                        <span>{movie.runtime} min</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Calendar size={16} className="mr-1" />
+                        <span>{new Date(movie.release_date).getFullYear()}</span>
+                      </div>
+                    </div>
+                  </div>
                   <motion.button
                     onClick={handleLike}
                     className={`relative p-3 rounded-full transition-all duration-300 ${
@@ -304,17 +314,6 @@ const MovieDetail: React.FC = () => {
                       )}
                     </AnimatePresence>
                   </motion.button>
-                </div>
-
-                <div className="flex items-center gap-4 text-gray-400 mb-6">
-                  <div className="flex items-center">
-                    <Clock size={16} className="mr-1" />
-                    <span>{movie.runtime} min</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Calendar size={16} className="mr-1" />
-                    <span>{new Date(movie.release_date).getFullYear()}</span>
-                  </div>
                 </div>
 
                 <div className="flex flex-wrap gap-2 mb-6">

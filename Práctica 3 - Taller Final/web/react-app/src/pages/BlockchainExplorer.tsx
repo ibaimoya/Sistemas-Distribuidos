@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Shield, Hash, Clock, Link as LinkIcon, CheckCircle, XCircle, RefreshCw, X, AlertTriangle, Copy, Check } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Shield, Hash, Link as LinkIcon, CheckCircle, XCircle, RefreshCw, X, AlertTriangle, Copy, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Header } from '../components';
 
 interface Block {
   index:        number;
@@ -170,17 +170,9 @@ export default function BlockchainExplorer() {
 
   return (
     <div className="min-h-screen bg-[#111111] text-white">
-      {/* Header */}
-      <header className="fixed w-full z-50 flex justify-between items-center px-8 py-4 bg-gradient-to-b from-black/80 to-transparent">
-        <div className="flex items-center space-x-4">
-          <Link to="/" className="text-[#1db954] hover:text-[#1ed760] transition-colors">
-            <ArrowLeft size={24} />
-          </Link>
-          <h1 className="text-3xl font-bold text-[#1db954]">Explorador de Blockchain</h1>
-        </div>
-      </header>
+      <Header title="Explorador de Blockchain" showBackButton={true} backTo="/" />
 
-      <main className="pt-24 px-8 pb-8">
+      <main className="pt-32 px-8 pb-8">
         <div className="max-w-7xl mx-auto">
           {/* Blockchain Info Card */}
           {blockchainInfo && (

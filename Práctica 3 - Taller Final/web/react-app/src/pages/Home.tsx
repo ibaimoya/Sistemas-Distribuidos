@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, Heart, User, X, Shield, Users, Bell, UserPlus, Check, Link as LinkIcon } from 'lucide-react';
+import { Heart, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { Header } from '../components';
 
 interface Movie {
   id: number;
@@ -10,52 +11,23 @@ interface Movie {
   overview: string;
 }
 
-interface FriendRequest {
-  id: number;
-  remitente: {
-    id: number;
-    nombre: string;
-    email: string;
-  };
-  fecha: string;
-}
-
 const Home: React.FC = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const [username, setUsername] = useState('Usuario');
   const [hoveredMovie, setHoveredMovie] = useState<number | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [likedMovies, setLikedMovies] = useState<Set<number>>(new Set());
   const [animatingMovie, setAnimatingMovie] = useState<number | null>(null);
   const [feedbackType, setFeedbackType] = useState<'add' | 'remove' | null>(null);  
   const navigate = useNavigate();
-  const [isAdmin, setIsAdmin] = useState(false);
-  
-  // Sistema de notificaciones
-  const [notificationCount, setNotificationCount] = useState(0);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
-  const [loadingRequests, setLoadingRequests] = useState(false);
 
   useEffect(() => {
-    checkAuth();
     fetchMovies();
     loadUserFavorites();
   }, []);
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchNotificationCount();
-      const interval = setInterval(fetchNotificationCount, 30000); // Cada 30 segundos
-      return () => clearInterval(interval);
-    }
-  }, [isAuthenticated]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -74,92 +46,6 @@ const Home: React.FC = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [page, hasMore, loading, searchQuery]);
-
-  const checkAuth = async () => {
-    try {
-      const response = await fetch('/auth/check', {
-        credentials: 'include'
-      });
-      const data = await response.json();
-      
-      if (data.authenticated) {
-        setIsAuthenticated(true);
-        setUsername(data.username);
-        setIsAdmin(Boolean(data.admin));
-      } 
-    } catch (error) {
-      console.error('Error checking auth:', error);
-    }
-  };
-
-  const fetchNotificationCount = async () => {
-    try {
-      const response = await fetch('/api/friends/requests/count', {
-        credentials: 'include'
-      });
-      const data = await response.json();
-      setNotificationCount(data.count || 0);
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-    }
-  };
-
-  const fetchFriendRequests = async () => {
-    setLoadingRequests(true);
-    try {
-      const response = await fetch('/api/friends/requests/pending', {
-        credentials: 'include'
-      });
-      const data = await response.json();
-      setFriendRequests(data.requests || []);
-    } catch (error) {
-      console.error('Error fetching friend requests:', error);
-    } finally {
-      setLoadingRequests(false);
-    }
-  };
-
-  const handleAcceptRequest = async (requestId: number) => {
-    try {
-      const response = await fetch(`/api/friends/requests/${requestId}/accept`, {
-        method: 'POST',
-        credentials: 'include'
-      });
-      
-      if (response.ok) {
-        // Actualizar la lista y el contador
-        setFriendRequests(prev => prev.filter(r => r.id !== requestId));
-        setNotificationCount(prev => Math.max(0, prev - 1));
-        
-        
-      }
-    } catch (error) {
-      console.error('Error accepting request:', error);
-    }
-  };
-
-  const handleRejectRequest = async (requestId: number) => {
-    try {
-      const response = await fetch(`/api/friends/requests/${requestId}/reject`, {
-        method: 'POST',
-        credentials: 'include'
-      });
-      
-      if (response.ok) {
-        setFriendRequests(prev => prev.filter(r => r.id !== requestId));
-        setNotificationCount(prev => Math.max(0, prev - 1));
-      }
-    } catch (error) {
-      console.error('Error rejecting request:', error);
-    }
-  };
-
-  const handleNotificationClick = () => {
-    setShowNotifications(!showNotifications);
-    if (!showNotifications && notificationCount > 0) {
-      fetchFriendRequests();
-    }
-  };
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
@@ -262,165 +148,11 @@ const Home: React.FC = () => {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await fetch('/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
-      window.location.href = '/welcome';
-    } catch (error) {
-      console.error('Error logging out:', error);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-[#111111] text-white">
-      {/* Header */}
-      <header className="fixed w-full z-50 flex justify-between items-center px-8 py-4 bg-gradient-to-b from-black/80 to-transparent">
-        <h1 className="text-3xl font-bold text-[#1db954] transition-transform duration-300 hover:scale-105 cursor-pointer">Kinora</h1>
-        <div className="flex items-center space-x-4">
-          {/* Notificaciones */}
-          <div className="relative">
-            <button
-              onClick={handleNotificationClick}
-              className="relative p-2 hover:bg-white/10 rounded-full transition-colors"
-            >
-              <Bell size={24} className={notificationCount > 0 ? 'text-[#1db954]' : 'text-white'} />
-              {notificationCount > 0 && (
-                <motion.span
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
-                >
-                  {notificationCount}
-                </motion.span>
-              )}
-            </button>
+      <Header showNotifications={true} />
 
-            <AnimatePresence>
-              {showNotifications && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="absolute right-0 mt-2 w-80 bg-[#1a1a1a] rounded-lg shadow-xl py-2 max-h-96 overflow-y-auto"
-                  onMouseLeave={() => setShowNotifications(false)}
-                >
-                  <div className="px-4 py-2 border-b border-white/10">
-                    <h3 className="font-semibold flex items-center">
-                      <UserPlus size={18} className="mr-2 text-[#1db954]" />
-                      Solicitudes de amistad
-                    </h3>
-                  </div>
-                  
-                  {loadingRequests ? (
-                    <div className="p-4 text-center">
-                      <div className="w-6 h-6 border-2 border-[#1db954] border-t-transparent rounded-full animate-spin mx-auto"></div>
-                    </div>
-                  ) : friendRequests.length === 0 ? (
-                    <div className="p-4 text-center text-gray-400">
-                      No tienes solicitudes pendientes
-                    </div>
-                  ) : (
-                    <div className="py-2">
-                      {friendRequests.map((request) => (
-                        <motion.div
-                          key={request.id}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          className="px-4 py-3 hover:bg-white/5 transition-colors"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <p className="font-medium">{request.remitente.nombre}</p>
-                              <p className="text-sm text-gray-400">
-                                {new Date(request.fecha).toLocaleDateString()}
-                              </p>
-                            </div>
-                            <div className="flex space-x-2">
-                              <button
-                                onClick={() => handleAcceptRequest(request.id)}
-                                className="p-2 bg-[#1db954] hover:bg-[#1ed760] rounded-full transition-colors"
-                              >
-                                <Check size={16} />
-                              </button>
-                              <button
-                                onClick={() => handleRejectRequest(request.id)}
-                                className="p-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-full transition-colors"
-                              >
-                                <X size={16} />
-                              </button>
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Menu de usuario */}
-          <div className="relative">
-            <button
-              className="flex items-center space-x-2 hover:text-[#1db954] transition-colors"
-              onMouseEnter={() => setShowUserMenu(true)}
-              onMouseLeave={() => setShowUserMenu(false)}
-            >
-              <User size={24} />
-              <span>{username}</span>
-            </button>
-
-            <AnimatePresence>
-              {showUserMenu && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="absolute right-0 mt-2 w-48 bg-[#1a1a1a] rounded-md shadow-lg py-1"
-                  onMouseEnter={() => setShowUserMenu(true)}
-                  onMouseLeave={() => setShowUserMenu(false)}
-                >
-                  <Link
-                    to="/my-movies"
-                    className="flex items-center w-full px-4 py-2 text-sm hover:bg-[#1db954] hover:text-white transition-colors"
-                  >
-                    <Heart size={16} className="mr-2" />
-                    Mis Películas
-                  </Link>
-                  <Link
-                    to="/blockchain"
-                    className="flex items-center w-full px-4 py-2 text-sm hover:bg-[#1db954] hover:text-white transition-colors"
-                  >
-                    <LinkIcon size={16} className="mr-2" />
-                    Blockchain
-                  </Link>
-                  {isAdmin && (
-                    <Link
-                      to="/admin"
-                      className="flex items-center w-full px-4 py-2 text-sm hover:bg-[#1db954] hover:text-white transition-colors"
-                    >
-                      <Shield size={16} className="mr-2" />
-                      Panel admin
-                    </Link>
-                  )}
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center w-full px-4 py-2 text-sm hover:bg-[#1db954] hover:text-white transition-colors"
-                  >
-                    <LogOut size={16} className="mr-2" />
-                    Cerrar sesión
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-      </header>
-
-      <div className="pt-24 pb-8 px-8">
+      <div className="pt-32 pb-8 px-8">
         <div className="max-w-2xl mx-auto relative">
           <div className="relative">
             <input
