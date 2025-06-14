@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Shield, Hash, Clock, Link as LinkIcon, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Shield, Hash, Clock, Link as LinkIcon, CheckCircle, XCircle, RefreshCw, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -266,58 +266,66 @@ export default function BlockchainExplorer() {
           {/* Block Detail Modal */}
           <AnimatePresence>
             {selectedBlock && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50"
-                onClick={() => setSelectedBlock(null)}
-              >
+              <>
+                {/* Overlay */}
                 <motion.div
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.9, opacity: 0 }}
-                  className="bg-[#1a1a1a] rounded-xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto"
-                  onClick={e => e.stopPropagation()}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 bg-black/80 z-40"
+                  onClick={() => setSelectedBlock(null)}
+                />
+                
+                {/* Modal Content */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className="fixed inset-0 flex items-center justify-center p-4 z-50 pointer-events-none"
                 >
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-2xl font-bold">Bloque #{selectedBlock.index}</h3>
-                    <button
-                      onClick={() => setSelectedBlock(null)}
-                      className="text-gray-400 hover:text-white transition-colors"
-                    >
-                      <X size={24} />
-                    </button>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="bg-black/20 rounded-lg p-4">
-                      <p className="text-sm text-gray-400 mb-1">Timestamp</p>
-                      <p className="font-mono">{formatTimestamp(selectedBlock.timestamp)}</p>
+                  <div 
+                    className="bg-[#1a1a1a] rounded-xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto pointer-events-auto"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-2xl font-bold">Bloque #{selectedBlock.index}</h3>
+                      <button
+                        onClick={() => setSelectedBlock(null)}
+                        className="text-gray-400 hover:text-white transition-colors p-2 hover:bg-white/10 rounded-lg"
+                      >
+                        <X size={24} />
+                      </button>
                     </div>
 
-                    <div className="bg-black/20 rounded-lg p-4">
-                      <p className="text-sm text-gray-400 mb-1">Datos</p>
-                      <p className="font-mono text-sm break-all">{selectedBlock.data}</p>
-                    </div>
+                    <div className="space-y-4">
+                      <div className="bg-black/20 rounded-lg p-4">
+                        <p className="text-sm text-gray-400 mb-1">Timestamp</p>
+                        <p className="font-mono">{formatTimestamp(selectedBlock.timestamp)}</p>
+                      </div>
 
-                    <div className="bg-black/20 rounded-lg p-4">
-                      <p className="text-sm text-gray-400 mb-1">Hash del Bloque</p>
-                      <p className="font-mono text-xs break-all text-[#1db954]">{selectedBlock.hash}</p>
-                    </div>
+                      <div className="bg-black/20 rounded-lg p-4">
+                        <p className="text-sm text-gray-400 mb-1">Datos</p>
+                        <p className="font-mono text-sm break-all">{selectedBlock.data}</p>
+                      </div>
 
-                    <div className="bg-black/20 rounded-lg p-4">
-                      <p className="text-sm text-gray-400 mb-1">Hash Anterior</p>
-                      <p className="font-mono text-xs break-all">{selectedBlock.previousHash}</p>
-                    </div>
+                      <div className="bg-black/20 rounded-lg p-4">
+                        <p className="text-sm text-gray-400 mb-1">Hash del Bloque</p>
+                        <p className="font-mono text-xs break-all text-[#1db954]">{selectedBlock.hash}</p>
+                      </div>
 
-                    <div className="bg-black/20 rounded-lg p-4">
-                      <p className="text-sm text-gray-400 mb-1">Nonce (Proof of Work)</p>
-                      <p className="font-mono text-2xl">{selectedBlock.nonce}</p>
+                      <div className="bg-black/20 rounded-lg p-4">
+                        <p className="text-sm text-gray-400 mb-1">Hash Anterior</p>
+                        <p className="font-mono text-xs break-all">{selectedBlock.previousHash}</p>
+                      </div>
+
+                      <div className="bg-black/20 rounded-lg p-4">
+                        <p className="text-sm text-gray-400 mb-1">Nonce (Proof of Work)</p>
+                        <p className="font-mono text-2xl">{selectedBlock.nonce}</p>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
-              </motion.div>
+              </>
             )}
           </AnimatePresence>
         </div>
