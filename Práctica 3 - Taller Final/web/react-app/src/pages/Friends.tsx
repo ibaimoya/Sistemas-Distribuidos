@@ -14,6 +14,7 @@ import {
   UserX
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { Header } from '../components';
 
 interface Friend {
@@ -44,6 +45,7 @@ const Friends: React.FC = () => {
   const [sendingRequest, setSendingRequest] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [activeTab, setActiveTab] = useState<'friends' | 'sent'>('friends');
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchFriends();
@@ -341,22 +343,25 @@ const Friends: React.FC = () => {
                             })}.
                           </p>
 
-                          <div className="flex space-x-2">
+                            <div className="flex space-x-2">
                             <button
-                              disabled
-                              className="flex-1 flex items-center justify-center space-x-2 py-2.5 bg-[#1db954]/10 text-[#1db954] rounded-lg opacity-50 cursor-not-allowed"
+                                onClick={() => {
+                                // Redirigir a home con el chat abierto para este amigo.
+                                    navigate(`/?chat=${friend.id}`);
+                                }}
+                                className="flex-1 flex items-center justify-center space-x-2 py-2.5 bg-[#1db954]/10 text-[#1db954] rounded-lg hover:bg-[#1db954]/20 transition-all duration-200"
                             >
-                              <MessageCircle size={16} />
-                              <span className="text-sm font-medium">Chat (próximamente)</span>
+                                <MessageCircle size={16} />
+                                <span className="text-sm font-medium">Abrir chat</span>
                             </button>
                             <button
-                              onClick={() => removeFriend(friend.id)}
-                              className="p-2.5 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors hover:scale-110"
-                              title="Eliminar amigo"
+                                onClick={() => removeFriend(friend.id)}
+                                className="p-2.5 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors hover:scale-110"
+                                title="Eliminar amigo"
                             >
-                              <Trash2 size={16} />
+                                <Trash2 size={16} />
                             </button>
-                          </div>
+                            </div>
                         </motion.div>
                       ))}
                     </div>

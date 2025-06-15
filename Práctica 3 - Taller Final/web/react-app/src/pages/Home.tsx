@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Header } from '../components';
+import Chat from '../components/Chat';
 
 interface Movie {
   id: number;
@@ -367,6 +368,7 @@ const Home: React.FC = () => {
         )} 
 
       </main>
+      <Chat /> 
     </div>
   );
 };

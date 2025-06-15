@@ -25,9 +25,9 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * Controlador REST para gestionar las amistades entre usuarios.
- * 
+ * Mantiene todos los endpoints que estaban duplicados en FriendController.
+ *
  * @author Ibai Moya Aroz
- * 
  * @version 1.0
  * @since 1.0
  */
@@ -39,9 +39,7 @@ public class AmistadController {
     private final AmistadService amistadService;
     private final UsuarioRepository usuarioRepository;
 
-    /**
-     * Obtiene el usuario autenticado actual.
-     */
+    /** Obtiene el usuario autenticado actual. */
     private Usuario obtenerUsuarioActual() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
@@ -50,9 +48,7 @@ public class AmistadController {
         return usuarioRepository.findByNombre(auth.getName()).orElse(null);
     }
 
-    /**
-     * Obtiene la lista de amigos del usuario actual.
-     */
+    /** Devuelve la lista de amigos del usuario actual. */
     @GetMapping
     public ResponseEntity<Map<String, Object>> obtenerAmigos() {
         Usuario usuario = obtenerUsuarioActual();
@@ -63,23 +59,20 @@ public class AmistadController {
         List<Amistad> amistades = amistadService.obtenerAmigos(usuario);
         List<Map<String, Object>> amigos = amistades.stream()
             .map(a -> Map.<String, Object>of(
-                "id", a.getAmigo().getId(),
-                "nombre", a.getAmigo().getNombre(),
-                "email", a.getAmigo().getEmail(),
-                "fechaAmistad", a.getFechaAmistad().toString()
+                    "id", a.getAmigo().getId(),
+                    "nombre", a.getAmigo().getNombre(),
+                    "email", a.getAmigo().getEmail(),
+                    "fechaAmistad", a.getFechaAmistad().toString()
             ))
             .toList();
 
         Map<String, Object> response = new HashMap<>();
         response.put("friends", amigos);
         response.put("total", amigos.size());
-        
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Envía una solicitud de amistad.
-     */
+    /** Envía una solicitud de amistad. */
     @PostMapping("/request")
     public ResponseEntity<Map<String, Object>> enviarSolicitud(@RequestBody Map<String, String> body) {
         Usuario remitente = obtenerUsuarioActual();
@@ -88,7 +81,6 @@ public class AmistadController {
         }
 
         Map<String, Object> response = new HashMap<>();
-        
         String nombreDestinatario = body.get("username");
         if (nombreDestinatario == null || nombreDestinatario.trim().isEmpty()) {
             response.put("success", false);
@@ -116,9 +108,7 @@ public class AmistadController {
         }
     }
 
-    /**
-     * Obtiene las solicitudes pendientes recibidas.
-     */
+    /** Devuelve las solicitudes pendientes recibidas. */
     @GetMapping("/requests/pending")
     public ResponseEntity<Map<String, Object>> obtenerSolicitudesPendientes() {
         Usuario usuario = obtenerUsuarioActual();
@@ -127,28 +117,25 @@ public class AmistadController {
         }
 
         List<SolicitudAmistad> solicitudes = amistadService.obtenerSolicitudesPendientes(usuario);
-        List<Map<String, Object>> solicitudesData = solicitudes.stream()
+        List<Map<String, Object>> datos = solicitudes.stream()
             .map(s -> Map.<String, Object>of(
-                "id", s.getId(),
-                "remitente", Map.of(
-                    "id", s.getRemitente().getId(),
-                    "nombre", s.getRemitente().getNombre(),
-                    "email", s.getRemitente().getEmail()
-                ),
-                "fecha", s.getFechaSolicitud().toString()
+                    "id", s.getId(),
+                    "remitente", Map.of(
+                            "id", s.getRemitente().getId(),
+                            "nombre", s.getRemitente().getNombre(),
+                            "email", s.getRemitente().getEmail()
+                    ),
+                    "fecha", s.getFechaSolicitud().toString()
             ))
             .toList();
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("requests", solicitudesData);
-        response.put("total", solicitudesData.size());
-        
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(Map.of(
+                "requests", datos,
+                "total", datos.size()
+        ));
     }
 
-    /**
-     * Obtiene las solicitudes enviadas por el usuario.
-     */
+    /** Devuelve las solicitudes enviadas por el usuario. */
     @GetMapping("/requests/sent")
     public ResponseEntity<Map<String, Object>> obtenerSolicitudesEnviadas() {
         Usuario usuario = obtenerUsuarioActual();
@@ -157,29 +144,26 @@ public class AmistadController {
         }
 
         List<SolicitudAmistad> solicitudes = amistadService.obtenerSolicitudesEnviadas(usuario);
-        List<Map<String, Object>> solicitudesData = solicitudes.stream()
+        List<Map<String, Object>> datos = solicitudes.stream()
             .map(s -> Map.<String, Object>of(
-                "id", s.getId(),
-                "destinatario", Map.of(
-                    "id", s.getDestinatario().getId(),
-                    "nombre", s.getDestinatario().getNombre(),
-                    "email", s.getDestinatario().getEmail()
-                ),
-                "estado", s.getEstado().toString(),
-                "fecha", s.getFechaSolicitud().toString()
+                    "id", s.getId(),
+                    "destinatario", Map.of(
+                            "id", s.getDestinatario().getId(),
+                            "nombre", s.getDestinatario().getNombre(),
+                            "email", s.getDestinatario().getEmail()
+                    ),
+                    "estado", s.getEstado().toString(),
+                    "fecha", s.getFechaSolicitud().toString()
             ))
             .toList();
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("requests", solicitudesData);
-        response.put("total", solicitudesData.size());
-        
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(Map.of(
+                "requests", datos,
+                "total", datos.size()
+        ));
     }
 
-    /**
-     * Acepta una solicitud de amistad.
-     */
+    /** Acepta una solicitud de amistad. */
     @PostMapping("/requests/{requestId}/accept")
     public ResponseEntity<Map<String, Object>> aceptarSolicitud(@PathVariable Long requestId) {
         Usuario usuario = obtenerUsuarioActual();
@@ -188,7 +172,6 @@ public class AmistadController {
         }
 
         Map<String, Object> response = new HashMap<>();
-        
         try {
             amistadService.aceptarSolicitud(requestId, usuario);
             response.put("success", true);
@@ -201,9 +184,7 @@ public class AmistadController {
         }
     }
 
-    /**
-     * Rechaza una solicitud de amistad.
-     */
+    /** Rechaza una solicitud de amistad. */
     @PostMapping("/requests/{requestId}/reject")
     public ResponseEntity<Map<String, Object>> rechazarSolicitud(@PathVariable Long requestId) {
         Usuario usuario = obtenerUsuarioActual();
@@ -212,7 +193,6 @@ public class AmistadController {
         }
 
         Map<String, Object> response = new HashMap<>();
-        
         try {
             amistadService.rechazarSolicitud(requestId, usuario);
             response.put("success", true);
@@ -225,9 +205,7 @@ public class AmistadController {
         }
     }
 
-    /**
-     * Cancela una solicitud enviada.
-     */
+    /** Cancela una solicitud enviada. */
     @DeleteMapping("/requests/{requestId}")
     public ResponseEntity<Map<String, Object>> cancelarSolicitud(@PathVariable Long requestId) {
         Usuario usuario = obtenerUsuarioActual();
@@ -236,7 +214,6 @@ public class AmistadController {
         }
 
         Map<String, Object> response = new HashMap<>();
-        
         try {
             amistadService.cancelarSolicitud(requestId, usuario);
             response.put("success", true);
@@ -249,9 +226,7 @@ public class AmistadController {
         }
     }
 
-    /**
-     * Elimina un amigo.
-     */
+    /** Elimina un amigo. */
     @DeleteMapping("/{friendId}")
     public ResponseEntity<Map<String, Object>> eliminarAmigo(@PathVariable Long friendId) {
         Usuario usuario = obtenerUsuarioActual();
@@ -260,7 +235,6 @@ public class AmistadController {
         }
 
         Map<String, Object> response = new HashMap<>();
-        
         try {
             amistadService.eliminarAmigo(usuario, friendId);
             response.put("success", true);
@@ -273,9 +247,7 @@ public class AmistadController {
         }
     }
 
-    /**
-     * Obtiene el número de solicitudes pendientes (para notificaciones).
-     */
+    /** Devuelve el número de solicitudes pendientes para notificaciones. */
     @GetMapping("/requests/count")
     public ResponseEntity<Map<String, Object>> contarSolicitudesPendientes() {
         Usuario usuario = obtenerUsuarioActual();
@@ -284,7 +256,6 @@ public class AmistadController {
         }
 
         long count = amistadService.contarSolicitudesPendientes(usuario);
-        
         return ResponseEntity.ok(Map.of("count", count));
     }
 }

@@ -55,6 +55,7 @@ public class SecurityConfig {
         .csrf(csrf -> csrf.disable()) // NOSONAR - CSRF disabled for REST API with SPA frontend
         .authorizeHttpRequests(auth -> auth
         .requestMatchers("/auth/**").permitAll()
+        .requestMatchers("/ws/**").permitAll()
         .requestMatchers("/admin/**").hasRole("ADMIN")
         .requestMatchers("/api/**").authenticated()
         .anyRequest().permitAll()

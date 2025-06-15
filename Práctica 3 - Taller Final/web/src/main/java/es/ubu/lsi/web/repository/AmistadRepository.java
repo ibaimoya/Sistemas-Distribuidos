@@ -64,4 +64,13 @@ public interface AmistadRepository extends JpaRepository<Amistad, Long> {
      * @return el número de amigos
      */
     long countByUsuario(Usuario usuario);
+
+    /**
+     * Verifica si existe una amistad con un estado específico.
+     * 
+     * @param usuario el usuario que envía la solicitud
+     * @param amigo el usuario que recibe la solicitud
+     * @return true si existe una amistad con ese estado
+     */
+    boolean existsByUsuarioAndAmigo(Usuario usuario, Usuario amigo);
 }
